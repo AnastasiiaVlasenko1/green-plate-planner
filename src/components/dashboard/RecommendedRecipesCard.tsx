@@ -20,14 +20,14 @@ export function RecommendedRecipesCard() {
 
   if (error) {
     return (
-      <Card className="card-shadow">
-        <CardHeader className="pb-3">
+      <Card className="card-shadow h-full flex flex-col">
+        <CardHeader className="pb-3 flex-shrink-0">
           <CardTitle className="text-lg flex items-center gap-2">
             <Sparkles className="w-5 h-5 text-primary" />
             AI Recommendations
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="flex-1">
           <div className="text-center py-6 text-muted-foreground">
             <p className="text-sm">Unable to load recommendations.</p>
             <Button variant="ghost" size="sm" onClick={handleRefresh} className="mt-2">
@@ -42,8 +42,8 @@ export function RecommendedRecipesCard() {
 
   return (
     <>
-      <Card className="card-shadow">
-        <CardHeader className="pb-3">
+      <Card className="card-shadow h-full flex flex-col">
+        <CardHeader className="pb-3 flex-shrink-0">
           <div className="flex items-center justify-between">
             <CardTitle className="text-lg flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-primary" />
@@ -63,7 +63,7 @@ export function RecommendedRecipesCard() {
             Personalized picks based on your nutritional gaps
           </p>
         </CardHeader>
-        <CardContent className="space-y-3">
+        <CardContent className="flex-1 space-y-3">
           {isLoading ? (
             <>
               {[...Array(3)].map((_, i) => (
