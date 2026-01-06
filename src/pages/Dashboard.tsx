@@ -1,23 +1,21 @@
 import { Link } from 'react-router-dom';
-import { format, isToday } from 'date-fns';
-import { Plus, Flame, ArrowRight, Clock } from 'lucide-react';
+import { format, isToday, startOfWeek, endOfWeek } from 'date-fns';
+import { Plus } from 'lucide-react';
 import { AppHeader } from '@/components/layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { NutritionRing } from '@/components/nutrition/NutritionDisplay';
 import { useProfile } from '@/hooks/useProfile';
-import { useMealPlans, MealType } from '@/hooks/useMealPlans';
+import { useMealPlans } from '@/hooks/useMealPlans';
 import { useRecipes } from '@/hooks/useRecipes';
 import { Skeleton } from '@/components/ui/skeleton';
-
-const mealTypeLabels: Record<MealType, string> = {
-  breakfast: 'Breakfast',
-  snack1: 'Morning Snack',
-  lunch: 'Lunch',
-  snack2: 'Afternoon Snack',
-  dinner: 'Dinner',
-  snack3: 'Evening Snack',
-};
+import {
+  SmartInsightsBar,
+  WeeklyTrendChart,
+  TodaysMealsCard,
+  TomorrowsPlanCard,
+  QuickRecipesCarousel,
+} from '@/components/dashboard';
 
 export default function Dashboard() {
   const { profile, isLoading: profileLoading } = useProfile();
@@ -42,6 +40,34 @@ export default function Dashboard() {
     },
     { calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0 }
   );
+
+  const goals = {
+    calories: profile?.daily_calories || 2000,
+    protein: profile?.protein_goal || 150,
+    carbs: profile?.carbs_goal || 200,
+    fat: profile?.fat_goal || 65,
+    fiber: profile?.fiber_goal || 30,
+  };
+
+  // Generate smart insight based on current progress
+  const getSmartInsight = () => {
+    const caloriePercent = (todayNutrition.calories / goals.calories) * 100;
+    const proteinPercent = (todayNutrition.protein / goals.protein) * 100;
+    
+    if (todaysMeals.length === 0) {
+      return "Start your day right! Plan your meals to stay on track with your nutrition goals.";
+    }
+    if (proteinPercent < 30 && caloriePercent > 40) {
+      return "💡 Tip: Your protein intake is low compared to calories. Consider adding lean proteins to your next meal.";
+    }
+    if (caloriePercent >= 100) {
+      return "✅ You've reached your calorie goal for today! Focus on nutrient-dense foods if eating more.";
+    }
+    if (caloriePercent >= 70) {
+      return `🎯 Great progress! You're ${Math.round(caloriePercent)}% toward your daily calorie goal.`;
+    }
+    return "🌱 Keep going! A balanced mix of proteins, carbs, and healthy fats will fuel your day.";
+  };
 
   const isLoading = profileLoading || mealsLoading || recipesLoading;
 
@@ -68,200 +94,97 @@ export default function Dashboard() {
           </Button>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-3">
-          {/* Today's Nutrition */}
-          <Card className="lg:col-span-2 card-shadow">
-            <CardHeader className="pb-4">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-lg">Today's Nutrition</CardTitle>
-                <Link to="/nutrition" className="text-sm text-primary hover:underline flex items-center gap-1">
-                  View details
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
+        {/* Smart Insights Bar */}
+        {!isLoading && (
+          <SmartInsightsBar
+            todayNutrition={todayNutrition}
+            goals={goals}
+            mealsPlanned={todaysMeals.length}
+            streak={3} // TODO: Calculate actual streak from data
+          />
+        )}
+
+        {/* Today's Overview - Nutrition Rings */}
+        <Card className="card-shadow">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-lg">Today's Overview</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {isLoading ? (
+              <div className="flex justify-around flex-wrap gap-4">
+                {[...Array(5)].map((_, i) => (
+                  <Skeleton key={i} className="w-24 h-32 rounded-full" />
+                ))}
               </div>
-            </CardHeader>
-            <CardContent>
-              {isLoading ? (
-                <div className="flex justify-around">
-                  {[...Array(5)].map((_, i) => (
-                    <Skeleton key={i} className="w-24 h-32 rounded-full" />
-                  ))}
-                </div>
-              ) : (
-                <div className="flex flex-wrap justify-around gap-4">
+            ) : (
+              <>
+                <div className="flex flex-wrap justify-around gap-4 md:gap-6">
                   <NutritionRing
                     value={todayNutrition.calories}
-                    max={profile?.daily_calories || 2000}
+                    max={goals.calories}
                     color="hsl(var(--calories))"
                     label="Calories"
                     unit="kcal"
+                    size="lg"
                   />
                   <NutritionRing
                     value={todayNutrition.protein}
-                    max={profile?.protein_goal || 150}
+                    max={goals.protein}
                     color="hsl(var(--protein))"
                     label="Protein"
+                    size="lg"
                   />
                   <NutritionRing
                     value={todayNutrition.carbs}
-                    max={profile?.carbs_goal || 200}
+                    max={goals.carbs}
                     color="hsl(var(--carbs))"
                     label="Carbs"
+                    size="lg"
                   />
                   <NutritionRing
                     value={todayNutrition.fat}
-                    max={profile?.fat_goal || 65}
+                    max={goals.fat}
                     color="hsl(var(--fat))"
                     label="Fat"
+                    size="lg"
                   />
                   <NutritionRing
                     value={todayNutrition.fiber}
-                    max={profile?.fiber_goal || 30}
+                    max={goals.fiber}
                     color="hsl(var(--fiber))"
                     label="Fiber"
+                    size="lg"
                   />
                 </div>
-              )}
-            </CardContent>
-          </Card>
+                <p className="text-center text-sm text-muted-foreground mt-6 max-w-xl mx-auto">
+                  {getSmartInsight()}
+                </p>
+              </>
+            )}
+          </CardContent>
+        </Card>
 
-          {/* Quick Stats */}
-          <Card className="card-shadow">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-lg">This Week</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between p-3 bg-secondary rounded-lg">
-                <span className="text-muted-foreground">Meals Planned</span>
-                <span className="text-xl font-semibold text-foreground">
-                  {mealPlans?.length || 0}
-                </span>
-              </div>
-              <div className="flex items-center justify-between p-3 bg-secondary rounded-lg">
-                <span className="text-muted-foreground">Recipes Available</span>
-                <span className="text-xl font-semibold text-foreground">
-                  {recipes?.length || 0}
-                </span>
-              </div>
-              <div className="flex items-center justify-between p-3 bg-secondary rounded-lg">
-                <span className="text-muted-foreground">Today's Meals</span>
-                <span className="text-xl font-semibold text-foreground">
-                  {todaysMeals.length}
-                </span>
-              </div>
-            </CardContent>
-          </Card>
+        {/* Middle Section - Two Column Layout */}
+        <div className="grid gap-6 lg:grid-cols-2">
+          {/* Left Column - Today's Meals */}
+          <TodaysMealsCard meals={todaysMeals} isLoading={isLoading} />
+          
+          {/* Right Column - Weekly Trend */}
+          <WeeklyTrendChart
+            mealPlans={mealPlans || []}
+            calorieGoal={goals.calories}
+            streak={3} // TODO: Calculate actual streak
+          />
         </div>
 
-        {/* Today's Meals */}
-        <Card className="card-shadow">
-          <CardHeader className="pb-4">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-lg">Today's Meals</CardTitle>
-              <Link to="/meal-planner" className="text-sm text-primary hover:underline flex items-center gap-1">
-                View planner
-                <ArrowRight className="w-4 h-4" />
-              </Link>
-            </div>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {[...Array(3)].map((_, i) => (
-                  <Skeleton key={i} className="h-24 rounded-lg" />
-                ))}
-              </div>
-            ) : todaysMeals.length === 0 ? (
-              <div className="text-center py-8">
-                <p className="text-muted-foreground mb-4">No meals planned for today</p>
-                <Button asChild variant="outline">
-                  <Link to="/meal-planner">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Add Meals
-                  </Link>
-                </Button>
-              </div>
-            ) : (
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {todaysMeals.map((meal) => (
-                  <div
-                    key={meal.id}
-                    className="flex gap-3 p-3 bg-secondary rounded-lg"
-                  >
-                    <img
-                      src={meal.recipe?.image_url}
-                      alt={meal.recipe?.name}
-                      className="w-16 h-16 rounded-lg object-cover"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs text-primary font-medium uppercase">
-                        {mealTypeLabels[meal.meal_type]}
-                      </p>
-                      <p className="font-medium text-foreground truncate">
-                        {meal.recipe?.name}
-                      </p>
-                      <div className="flex items-center gap-3 text-xs text-muted-foreground mt-1">
-                        <span className="flex items-center gap-1">
-                          <Flame className="w-3 h-3" />
-                          {meal.recipe?.calories} cal
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Clock className="w-3 h-3" />
-                          {meal.recipe?.prep_time} min
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Quick Recipes */}
-        <Card className="card-shadow">
-          <CardHeader className="pb-4">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-lg">Quick Recipe Ideas</CardTitle>
-              <Link to="/recipes" className="text-sm text-primary hover:underline flex items-center gap-1">
-                Browse all
-                <ArrowRight className="w-4 h-4" />
-              </Link>
-            </div>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                {[...Array(4)].map((_, i) => (
-                  <Skeleton key={i} className="h-48 rounded-lg" />
-                ))}
-              </div>
-            ) : (
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                {recipes?.slice(0, 4).map((recipe) => (
-                  <Link
-                    key={recipe.id}
-                    to="/recipes"
-                    className="group relative overflow-hidden rounded-lg aspect-[4/3]"
-                  >
-                    <img
-                      src={recipe.image_url}
-                      alt={recipe.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
-                    <div className="absolute bottom-0 left-0 right-0 p-3">
-                      <p className="font-medium text-white text-sm">{recipe.name}</p>
-                      <p className="text-white/80 text-xs">
-                        {recipe.calories} cal • {recipe.prep_time + recipe.cook_time} min
-                      </p>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        {/* Bottom Section - Action Cards */}
+        <div className="grid gap-6 lg:grid-cols-2">
+          {/* Quick Recipe Ideas Carousel */}
+          <QuickRecipesCarousel recipes={recipes || []} isLoading={isLoading} />
+          
+          {/* Tomorrow's Plan Preview */}
+          <TomorrowsPlanCard mealPlans={mealPlans || []} isLoading={isLoading} />
+        </div>
       </div>
     </>
   );

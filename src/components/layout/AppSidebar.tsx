@@ -3,7 +3,6 @@ import {
   LayoutDashboard, 
   CalendarDays, 
   UtensilsCrossed, 
-  BarChart3, 
   ShoppingCart, 
   User,
   LogOut,
@@ -21,7 +20,6 @@ const navItems = [
   { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { path: '/meal-planner', icon: CalendarDays, label: 'Meal Planner' },
   { path: '/recipes', icon: UtensilsCrossed, label: 'Recipes' },
-  { path: '/nutrition', icon: BarChart3, label: 'Nutrition' },
   { path: '/grocery-list', icon: ShoppingCart, label: 'Grocery List' },
   { path: '/profile', icon: User, label: 'Profile' },
 ];
