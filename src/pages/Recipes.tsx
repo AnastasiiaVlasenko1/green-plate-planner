@@ -36,13 +36,16 @@ const mealTypeOptions: { value: MealType; label: string }[] = [
 export default function Recipes() {
   const [search, setSearch] = useState('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
+  const [selectedRecipeId, setSelectedRecipeId] = useState<string | null>(null);
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [addDate, setAddDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [addMealType, setAddMealType] = useState<MealType>('lunch');
 
   const { data: recipes, isLoading } = useRecipes(search, selectedTags.length > 0 ? selectedTags : undefined);
   const addMealPlan = useAddMealPlan();
+
+  // Derive selectedRecipe from query results so it updates when data refetches
+  const selectedRecipe = recipes?.find(r => r.id === selectedRecipeId) ?? null;
 
   const toggleTag = (tag: string) => {
     setSelectedTags((prev) =>
@@ -61,7 +64,7 @@ export default function Recipes() {
       });
       toast.success(`Added ${selectedRecipe.name} to your meal plan!`);
       setShowAddDialog(false);
-      setSelectedRecipe(null);
+      setSelectedRecipeId(null);
     } catch (error) {
       toast.error('Failed to add to meal plan');
     }
@@ -121,7 +124,7 @@ export default function Recipes() {
               <Card
                 key={recipe.id}
                 className="overflow-hidden card-shadow hover:card-shadow-hover transition-shadow cursor-pointer group"
-                onClick={() => setSelectedRecipe(recipe)}
+                onClick={() => setSelectedRecipeId(recipe.id)}
               >
                 <div className="relative h-48 overflow-hidden">
                   <img
@@ -134,7 +137,7 @@ export default function Recipes() {
                     className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
                     onClick={(e) => {
                       e.stopPropagation();
-                      setSelectedRecipe(recipe);
+                      setSelectedRecipeId(recipe.id);
                       setShowAddDialog(true);
                     }}
                   >
@@ -180,7 +183,7 @@ export default function Recipes() {
       <RecipeDetailDialog
         recipe={selectedRecipe}
         open={!!selectedRecipe && !showAddDialog}
-        onOpenChange={(open) => !open && setSelectedRecipe(null)}
+        onOpenChange={(open) => !open && setSelectedRecipeId(null)}
         onAddToPlan={() => setShowAddDialog(true)}
       />
 
