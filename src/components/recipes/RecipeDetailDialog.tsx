@@ -5,7 +5,6 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Recipe } from '@/hooks/useRecipes';
-
 interface RecipeDetailDialogProps {
   recipe: Recipe | null;
   open: boolean;
@@ -14,27 +13,20 @@ interface RecipeDetailDialogProps {
   onRemoveFromPlan?: () => void;
   showRemoveButton?: boolean;
 }
-
 export function RecipeDetailDialog({
   recipe,
   open,
   onOpenChange,
   onAddToPlan,
   onRemoveFromPlan,
-  showRemoveButton = false,
+  showRemoveButton = false
 }: RecipeDetailDialogProps) {
   if (!recipe) return null;
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+  return <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden flex flex-col p-0">
         {/* Hero Image */}
         <div className="relative h-56 w-full">
-          <img
-            src={recipe.image_url}
-            alt={recipe.name}
-            className="w-full h-full object-cover"
-          />
+          <img src={recipe.image_url} alt={recipe.name} className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
         </div>
 
@@ -88,16 +80,10 @@ export function RecipeDetailDialog({
           {/* Tabs */}
           <Tabs defaultValue="ingredients" className="flex-1 flex flex-col overflow-hidden mt-4">
             <TabsList className="bg-transparent h-auto p-0 justify-start gap-6 border-b border-border">
-              <TabsTrigger 
-                value="ingredients" 
-                className="bg-transparent rounded-none px-0 pb-2 text-muted-foreground data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary font-medium -mb-px"
-              >
+              <TabsTrigger value="ingredients" className="bg-transparent rounded-none px-0 pb-2 text-muted-foreground data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary font-medium -mb-px">
                 Ingredients
               </TabsTrigger>
-              <TabsTrigger 
-                value="instructions"
-                className="bg-transparent rounded-none px-0 pb-2 text-muted-foreground data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary font-medium -mb-px"
-              >
+              <TabsTrigger value="instructions" className="bg-transparent rounded-none px-0 pb-2 text-muted-foreground data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary font-medium -mb-px">
                 Instructions
               </TabsTrigger>
             </TabsList>
@@ -105,66 +91,49 @@ export function RecipeDetailDialog({
             <TabsContent value="ingredients" className="flex-1 overflow-hidden mt-4">
               <ScrollArea className="h-[200px]">
                 <ul className="space-y-2 pr-4">
-                  {recipe.ingredients.map((ing, i) => (
-                    <li key={i} className="flex items-start gap-3 text-sm">
+                  {recipe.ingredients.map((ing, i) => <li key={i} className="flex items-start gap-3 text-sm">
                       <span className="min-w-[5rem] flex-shrink-0 text-muted-foreground font-medium">
                         {ing.amount || (ing as any).quantity}
                       </span>
                       <span className="text-foreground">{ing.name}</span>
-                    </li>
-                  ))}
+                    </li>)}
                 </ul>
               </ScrollArea>
             </TabsContent>
 
             <TabsContent value="instructions" className="flex-1 overflow-hidden mt-4">
               <ScrollArea className="h-[200px]">
-                {recipe.instructions && recipe.instructions.length > 0 ? (
-                  <ol className="space-y-4 pr-4">
-                    {recipe.instructions.map((step, i) => (
-                      <li key={i} className="flex gap-4">
-                        <span className="flex-shrink-0 w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-medium">
+                {recipe.instructions && recipe.instructions.length > 0 ? <ol className="space-y-4 pr-4">
+                    {recipe.instructions.map((step, i) => <li key={i} className="flex gap-4">
+                        <span className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-sm font-medium text-foreground bg-secondary">
                           {i + 1}
                         </span>
                         <p className="text-sm text-foreground pt-1">{step}</p>
-                      </li>
-                    ))}
-                  </ol>
-                ) : (
-                  <p className="text-sm text-muted-foreground italic">
+                      </li>)}
+                  </ol> : <p className="text-sm text-muted-foreground italic">
                     No instructions available for this recipe.
-                  </p>
-                )}
+                  </p>}
               </ScrollArea>
             </TabsContent>
           </Tabs>
 
           {/* Tags */}
-          {recipe.tags && recipe.tags.length > 0 && (
-            <div className="flex flex-wrap gap-2 pt-4 border-t border-border mt-4">
-              {recipe.tags.map((tag) => (
-                <Badge key={tag} variant="secondary" className="capitalize">
+          {recipe.tags && recipe.tags.length > 0 && <div className="flex flex-wrap gap-2 pt-4 border-t border-border mt-4">
+              {recipe.tags.map(tag => <Badge key={tag} variant="secondary" className="capitalize">
                   {tag}
-                </Badge>
-              ))}
-            </div>
-          )}
+                </Badge>)}
+            </div>}
 
           {/* Actions */}
           <div className="flex gap-2 mt-4">
-            {onAddToPlan && (
-              <Button className="flex-1" onClick={onAddToPlan}>
+            {onAddToPlan && <Button className="flex-1" onClick={onAddToPlan}>
                 Add to Meal Plan
-              </Button>
-            )}
-            {showRemoveButton && onRemoveFromPlan && (
-              <Button variant="destructive" onClick={onRemoveFromPlan}>
+              </Button>}
+            {showRemoveButton && onRemoveFromPlan && <Button variant="destructive" onClick={onRemoveFromPlan}>
                 Remove from Plan
-              </Button>
-            )}
+              </Button>}
           </div>
         </div>
       </DialogContent>
-    </Dialog>
-  );
+    </Dialog>;
 }
