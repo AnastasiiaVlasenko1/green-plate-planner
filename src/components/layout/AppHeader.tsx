@@ -1,6 +1,5 @@
-import { Search, Bell } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
 import { MobileNav } from './AppSidebar';
 
 interface AppHeaderProps {
@@ -32,10 +31,6 @@ export function AppHeader({ title, showSearch = true, onSearch }: AppHeaderProps
           </div>
         </div>
       )}
-
-      <Button variant="ghost" size="icon" className="text-muted-foreground">
-        <Bell className="w-5 h-5" />
-      </Button>
     </header>
   );
 }
