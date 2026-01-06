@@ -1,10 +1,14 @@
-import { Clock, Users, Flame, X } from 'lucide-react';
+import { useState } from 'react';
+import { Clock, Users, Flame, RefreshCw } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Recipe } from '@/hooks/useRecipes';
+import { useGenerateRecipeImage } from '@/hooks/useGenerateRecipeImage';
+import { toast } from 'sonner';
+
 interface RecipeDetailDialogProps {
   recipe: Recipe | null;
   open: boolean;
@@ -21,6 +25,28 @@ export function RecipeDetailDialog({
   onRemoveFromPlan,
   showRemoveButton = false
 }: RecipeDetailDialogProps) {
+  const generateImage = useGenerateRecipeImage();
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  const handleRegenerateImage = async () => {
+    if (!recipe) return;
+    
+    setIsGenerating(true);
+    try {
+      await generateImage.mutateAsync({
+        recipeId: recipe.id,
+        recipeName: recipe.name,
+        ingredients: recipe.ingredients,
+      });
+      toast.success('Image regenerated successfully!');
+    } catch (error) {
+      toast.error('Failed to generate image. Please try again.');
+      console.error('Image generation error:', error);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   if (!recipe) return null;
   return <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden flex flex-col p-0">
@@ -28,6 +54,16 @@ export function RecipeDetailDialog({
         <div className="relative h-56 w-full">
           <img src={recipe.image_url} alt={recipe.name} className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
+          <Button
+            size="sm"
+            variant="secondary"
+            className="absolute bottom-3 right-3 gap-2"
+            onClick={handleRegenerateImage}
+            disabled={isGenerating}
+          >
+            <RefreshCw className={`w-4 h-4 ${isGenerating ? 'animate-spin' : ''}`} />
+            {isGenerating ? 'Generating...' : 'Regenerate Image'}
+          </Button>
         </div>
 
         {/* Content */}
