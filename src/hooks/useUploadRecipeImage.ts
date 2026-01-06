@@ -6,8 +6,15 @@ export function useUploadRecipeImage() {
 
   return useMutation({
     mutationFn: async ({ recipeId, file }: { recipeId: string; file: File }) => {
+      // Get current user for folder structure
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError || !user) {
+        throw new Error('You must be logged in to upload images');
+      }
+
       const fileExt = file.name.split('.').pop();
-      const fileName = `${recipeId}-${Date.now()}.${fileExt}`;
+      // Use user-folder structure for ownership enforcement
+      const fileName = `${user.id}/${recipeId}-${Date.now()}.${fileExt}`;
 
       // Upload to storage
       const { error: uploadError } = await supabase.storage
