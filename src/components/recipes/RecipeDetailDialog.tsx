@@ -97,8 +97,8 @@ export function RecipeDetailDialog({
                 <ul className="space-y-2 pr-4">
                   {recipe.ingredients.map((ing, i) => (
                     <li key={i} className="flex items-start gap-3 text-sm">
-                      <span className="w-20 flex-shrink-0 text-muted-foreground font-medium">
-                        {ing.amount}
+                      <span className="min-w-[5rem] flex-shrink-0 text-muted-foreground font-medium">
+                        {ing.amount || (ing as any).quantity}
                       </span>
                       <span className="text-foreground">{ing.name}</span>
                     </li>
