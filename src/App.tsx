@@ -9,7 +9,6 @@ import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import Recipes from "./pages/Recipes";
 import MealPlanner from "./pages/MealPlanner";
-import Nutrition from "./pages/Nutrition";
 import GroceryList from "./pages/GroceryList";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
@@ -29,7 +28,6 @@ const App = () => (
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/recipes" element={<Recipes />} />
             <Route path="/meal-planner" element={<MealPlanner />} />
-            <Route path="/nutrition" element={<Nutrition />} />
             <Route path="/grocery-list" element={<GroceryList />} />
             <Route path="/profile" element={<Profile />} />
           </Route>
