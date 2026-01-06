@@ -10,7 +10,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useRecipes, Recipe } from '@/hooks/useRecipes';
 import { useAddMealPlan, MealType } from '@/hooks/useMealPlans';
 import { toast } from 'sonner';
-import { cn } from '@/lib/utils';
+import { RecipeDetailDialog } from '@/components/recipes/RecipeDetailDialog';
 
 const tagFilters = [
   'breakfast',
@@ -177,96 +177,12 @@ export default function Recipes() {
       </div>
 
       {/* Recipe Detail Dialog */}
-      <Dialog open={!!selectedRecipe && !showAddDialog} onOpenChange={() => setSelectedRecipe(null)}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          {selectedRecipe && (
-            <>
-              <div className="relative h-64 -mx-6 -mt-6 mb-4">
-                <img
-                  src={selectedRecipe.image_url}
-                  alt={selectedRecipe.name}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <DialogHeader>
-                <DialogTitle className="text-2xl">{selectedRecipe.name}</DialogTitle>
-              </DialogHeader>
-              <p className="text-muted-foreground">{selectedRecipe.description}</p>
-
-              {/* Nutrition Info */}
-              <div className="grid grid-cols-5 gap-4 py-4">
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-calories">{selectedRecipe.calories}</p>
-                  <p className="text-xs text-muted-foreground">Calories</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-protein">{selectedRecipe.protein}g</p>
-                  <p className="text-xs text-muted-foreground">Protein</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-carbs">{selectedRecipe.carbs}g</p>
-                  <p className="text-xs text-muted-foreground">Carbs</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-fat">{selectedRecipe.fat}g</p>
-                  <p className="text-xs text-muted-foreground">Fat</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-fiber">{selectedRecipe.fiber}g</p>
-                  <p className="text-xs text-muted-foreground">Fiber</p>
-                </div>
-              </div>
-
-              {/* Quick Info */}
-              <div className="flex gap-4 text-sm">
-                <div className="flex items-center gap-2">
-                  <Clock className="w-4 h-4 text-muted-foreground" />
-                  <span>Prep: {selectedRecipe.prep_time}m</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Clock className="w-4 h-4 text-muted-foreground" />
-                  <span>Cook: {selectedRecipe.cook_time}m</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Users className="w-4 h-4 text-muted-foreground" />
-                  <span>Serves {selectedRecipe.servings}</span>
-                </div>
-              </div>
-
-              {/* Ingredients */}
-              <div className="mt-4">
-                <h4 className="font-semibold mb-2">Ingredients</h4>
-                <ul className="space-y-1">
-                  {selectedRecipe.ingredients.map((ing, i) => (
-                    <li key={i} className="text-sm flex gap-2">
-                      <span className="text-muted-foreground">{ing.amount}</span>
-                      <span>{ing.name}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* Tags */}
-              {selectedRecipe.tags.length > 0 && (
-                <div className="flex flex-wrap gap-2 mt-4">
-                  {selectedRecipe.tags.map((tag) => (
-                    <Badge key={tag} variant="secondary" className="capitalize">
-                      {tag}
-                    </Badge>
-                  ))}
-                </div>
-              )}
-
-              <Button
-                className="w-full mt-4"
-                onClick={() => setShowAddDialog(true)}
-              >
-                Add to Meal Plan
-              </Button>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
+      <RecipeDetailDialog
+        recipe={selectedRecipe}
+        open={!!selectedRecipe && !showAddDialog}
+        onOpenChange={(open) => !open && setSelectedRecipe(null)}
+        onAddToPlan={() => setShowAddDialog(true)}
+      />
 
       {/* Add to Planner Dialog */}
       <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>

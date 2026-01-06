@@ -3,14 +3,15 @@ import { format, startOfWeek, addWeeks, subWeeks, addDays } from 'date-fns';
 import { ChevronLeft, ChevronRight, Plus, X, Flame } from 'lucide-react';
 import { AppHeader } from '@/components/layout';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useMealPlans, useAddMealPlan, useRemoveMealPlan, MealType, getWeekDays } from '@/hooks/useMealPlans';
-import { useRecipes, Recipe } from '@/hooks/useRecipes';
+import { useMealPlans, useAddMealPlan, useRemoveMealPlan, MealType, getWeekDays, MealPlan } from '@/hooks/useMealPlans';
+import { useRecipes, useRecipe, Recipe } from '@/hooks/useRecipes';
 import { useProfile } from '@/hooks/useProfile';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { RecipeDetailDialog } from '@/components/recipes/RecipeDetailDialog';
 
 const mealTypes: { key: MealType; label: string }[] = [
   { key: 'breakfast', label: 'Breakfast' },
@@ -26,6 +27,10 @@ export default function MealPlanner() {
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState<{ date: Date; mealType: MealType } | null>(null);
   const [recipeSearch, setRecipeSearch] = useState('');
+  const [selectedMeal, setSelectedMeal] = useState<MealPlan | null>(null);
+
+  // Fetch full recipe details when a meal is selected
+  const { data: selectedRecipeDetails } = useRecipe(selectedMeal?.recipe_id);
 
   const { profile } = useProfile();
   const { data: mealPlans, isLoading: mealsLoading } = useMealPlans(weekStart);
@@ -91,6 +96,17 @@ export default function MealPlanner() {
   const openAddDialog = (date: Date, mealType: MealType) => {
     setSelectedSlot({ date, mealType });
     setShowAddDialog(true);
+  };
+
+  const handleMealClick = (meal: MealPlan) => {
+    setSelectedMeal(meal);
+  };
+
+  const handleRemoveFromDetail = async () => {
+    if (selectedMeal) {
+      await handleRemoveMeal(selectedMeal.id);
+      setSelectedMeal(null);
+    }
   };
 
   return (
@@ -175,7 +191,13 @@ export default function MealPlanner() {
                       >
                         <CardContent className="p-2 h-full">
                           {meal ? (
-                            <div className="relative h-full group">
+                            <div 
+                              className="relative h-full group cursor-pointer"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleMealClick(meal);
+                              }}
+                            >
                               <Button
                                 variant="ghost"
                                 size="icon"
@@ -257,6 +279,15 @@ export default function MealPlanner() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Recipe Detail Dialog */}
+      <RecipeDetailDialog
+        recipe={selectedRecipeDetails || null}
+        open={!!selectedMeal}
+        onOpenChange={(open) => !open && setSelectedMeal(null)}
+        onRemoveFromPlan={handleRemoveFromDetail}
+        showRemoveButton={true}
+      />
     </>
   );
 }
