@@ -78,19 +78,17 @@ export function NutritionBar({ value, max, color, label, unit = 'g' }: Nutrition
   const percentage = Math.min((value / max) * 100, 100);
 
   return (
-    <div className="space-y-2">
-      <div className="flex justify-between text-sm">
-        <span className="text-muted-foreground">{label}</span>
-        <span className="font-medium text-foreground">
-          {value} / {max} {unit}
-        </span>
-      </div>
-      <div className="h-2 bg-muted rounded-full overflow-hidden">
+    <div className="flex-1 min-w-[100px]">
+      <p className="text-sm font-medium text-foreground text-center mb-2">{label}</p>
+      <div className="h-2.5 bg-muted rounded-full overflow-hidden">
         <div
           className="h-full rounded-full transition-all duration-500"
           style={{ width: `${percentage}%`, backgroundColor: color }}
         />
       </div>
+      <p className="text-sm text-muted-foreground text-center mt-2">
+        {value} / {max} {unit}
+      </p>
     </div>
   );
 }
