@@ -38,7 +38,8 @@ export function WeeklyTrendChart({ mealPlans, calorieGoal, streak = 0 }: WeeklyT
   }, [mealPlans, calorieGoal]);
 
   const maxCalories = Math.max(...chartData.map(d => d.calories), calorieGoal);
-  const yAxisMax = Math.ceil(maxCalories / 500) * 500 + 200;
+  const yAxisMax = Math.ceil(maxCalories / 500) * 500 + 500;
+  const yAxisTicks = Array.from({ length: Math.floor(yAxisMax / 500) + 1 }, (_, i) => i * 500);
 
   return (
     <Card className="card-shadow h-full flex flex-col">
@@ -68,6 +69,7 @@ export function WeeklyTrendChart({ mealPlans, calorieGoal, streak = 0 }: WeeklyT
               />
               <YAxis 
                 domain={[0, yAxisMax]}
+                ticks={yAxisTicks}
                 axisLine={false}
                 tickLine={false}
                 tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
