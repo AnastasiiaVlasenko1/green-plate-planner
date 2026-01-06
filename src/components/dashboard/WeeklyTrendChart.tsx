@@ -41,8 +41,8 @@ export function WeeklyTrendChart({ mealPlans, calorieGoal, streak = 0 }: WeeklyT
   const yAxisMax = Math.ceil(maxCalories / 500) * 500 + 200;
 
   return (
-    <Card className="card-shadow h-full">
-      <CardHeader className="pb-2">
+    <Card className="card-shadow h-full flex flex-col">
+      <CardHeader className="pb-2 flex-shrink-0">
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg flex items-center gap-2">
             <TrendingUp className="w-5 h-5 text-primary" />
@@ -56,8 +56,8 @@ export function WeeklyTrendChart({ mealPlans, calorieGoal, streak = 0 }: WeeklyT
           )}
         </div>
       </CardHeader>
-      <CardContent>
-        <div className="h-[180px] mt-2">
+      <CardContent className="flex-1 flex flex-col min-h-0">
+        <div className="flex-1 min-h-0">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
               <XAxis 
@@ -106,7 +106,7 @@ export function WeeklyTrendChart({ mealPlans, calorieGoal, streak = 0 }: WeeklyT
             </LineChart>
           </ResponsiveContainer>
         </div>
-        <div className="flex items-center justify-center gap-4 mt-2 text-xs text-muted-foreground">
+        <div className="flex items-center justify-center gap-4 mt-2 text-xs text-muted-foreground flex-shrink-0">
           <div className="flex items-center gap-1.5">
             <div className="w-3 h-0.5 bg-[hsl(var(--calories))] rounded" />
             <span>Calories</span>
