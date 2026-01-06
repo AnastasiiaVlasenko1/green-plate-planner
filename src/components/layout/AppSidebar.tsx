@@ -18,7 +18,7 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useState } from 'react';
 
 const navItems = [
-  { path: '/', icon: LayoutDashboard, label: 'Dashboard' },
+  { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { path: '/meal-planner', icon: CalendarDays, label: 'Meal Planner' },
   { path: '/recipes', icon: UtensilsCrossed, label: 'Recipes' },
   { path: '/nutrition', icon: BarChart3, label: 'Nutrition' },
