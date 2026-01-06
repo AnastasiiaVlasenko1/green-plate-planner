@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.recommend-recipes]
 verify_jwt = false
+
+[functions.admin-regenerate-images]
+verify_jwt = false
