@@ -31,8 +31,8 @@ export function TomorrowsPlanCard({ mealPlans, isLoading }: TomorrowsPlanCardPro
 
   if (isLoading) {
     return (
-      <Card className="card-shadow">
-        <CardContent className="p-6">
+      <Card className="card-shadow h-full flex flex-col">
+        <CardContent className="p-6 flex-1">
           <div className="h-24 bg-muted rounded-lg animate-pulse" />
         </CardContent>
       </Card>
@@ -40,8 +40,8 @@ export function TomorrowsPlanCard({ mealPlans, isLoading }: TomorrowsPlanCardPro
   }
 
   return (
-    <Card className="card-shadow">
-      <CardHeader className="pb-3">
+    <Card className="card-shadow h-full flex flex-col">
+      <CardHeader className="pb-3 flex-shrink-0">
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg flex items-center gap-2">
             <Calendar className="w-5 h-5 text-primary" />
@@ -52,7 +52,7 @@ export function TomorrowsPlanCard({ mealPlans, isLoading }: TomorrowsPlanCardPro
           </span>
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="flex-1">
         {tomorrowsMeals.length === 0 ? (
           <div className="text-center py-4">
             <p className="text-muted-foreground text-sm mb-3">
