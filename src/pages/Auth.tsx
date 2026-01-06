@@ -98,7 +98,7 @@ export default function Auth() {
           <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center mx-auto mb-4">
             <UtensilsCrossed className="w-7 h-7 text-primary-foreground" />
           </div>
-          <CardTitle className="text-2xl">Welcome to NutriPlan</CardTitle>
+          <CardTitle className="text-2xl">Welcome to NutriPlan!</CardTitle>
           <CardDescription>
             Your personal meal planning assistant
           </CardDescription>
