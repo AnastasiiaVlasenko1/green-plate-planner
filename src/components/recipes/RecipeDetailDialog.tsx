@@ -5,9 +5,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Recipe } from '@/hooks/useRecipes';
 import { useGenerateRecipeImage } from '@/hooks/useGenerateRecipeImage';
 import { useUploadRecipeImage } from '@/hooks/useUploadRecipeImage';
+import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 
 interface RecipeDetailDialogProps {
@@ -26,11 +28,14 @@ export function RecipeDetailDialog({
   onRemoveFromPlan,
   showRemoveButton = false
 }: RecipeDetailDialogProps) {
+  const { user } = useAuth();
   const generateImage = useGenerateRecipeImage();
   const uploadImage = useUploadRecipeImage();
   const [isGenerating, setIsGenerating] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  const isOwnRecipe = recipe && user && recipe.created_by === user.id;
 
   const handleRegenerateImage = async () => {
     if (!recipe) return;
@@ -101,28 +106,46 @@ export function RecipeDetailDialog({
             className="hidden"
             onChange={handleFileChange}
           />
-          <div className="absolute bottom-3 right-3 flex gap-2">
-            <Button
-              size="sm"
-              variant="secondary"
-              className="gap-2"
-              onClick={handleUploadClick}
-              disabled={isUploading || isGenerating}
-            >
-              <Upload className="w-4 h-4" />
-              {isUploading ? 'Uploading...' : 'Upload'}
-            </Button>
-            <Button
-              size="sm"
-              variant="secondary"
-              className="gap-2"
-              onClick={handleRegenerateImage}
-              disabled={isGenerating || isUploading}
-            >
-              <RefreshCw className={`w-4 h-4 ${isGenerating ? 'animate-spin' : ''}`} />
-              {isGenerating ? 'Generating...' : 'AI Generate'}
-            </Button>
-          </div>
+          {isOwnRecipe && (
+            <div className="absolute bottom-3 right-3 flex gap-2">
+              <Button
+                size="sm"
+                variant="secondary"
+                className="gap-2"
+                onClick={handleUploadClick}
+                disabled={isUploading || isGenerating}
+              >
+                <Upload className="w-4 h-4" />
+                {isUploading ? 'Uploading...' : 'Upload'}
+              </Button>
+              <Button
+                size="sm"
+                variant="secondary"
+                className="gap-2"
+                onClick={handleRegenerateImage}
+                disabled={isGenerating || isUploading}
+              >
+                <RefreshCw className={`w-4 h-4 ${isGenerating ? 'animate-spin' : ''}`} />
+                {isGenerating ? 'Generating...' : 'AI Generate'}
+              </Button>
+            </div>
+          )}
+          {!isOwnRecipe && user && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="absolute bottom-3 right-3">
+                    <Badge variant="secondary" className="text-xs">
+                      Public Recipe
+                    </Badge>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Image editing is only available for your own recipes</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
         </div>
 
         {/* Content */}
