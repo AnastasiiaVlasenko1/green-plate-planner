@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Clock, Users, Flame, RefreshCw } from 'lucide-react';
+import { useState, useRef } from 'react';
+import { Clock, Users, Flame, RefreshCw, Upload } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Recipe } from '@/hooks/useRecipes';
 import { useGenerateRecipeImage } from '@/hooks/useGenerateRecipeImage';
+import { useUploadRecipeImage } from '@/hooks/useUploadRecipeImage';
 import { toast } from 'sonner';
 
 interface RecipeDetailDialogProps {
@@ -26,7 +27,10 @@ export function RecipeDetailDialog({
   showRemoveButton = false
 }: RecipeDetailDialogProps) {
   const generateImage = useGenerateRecipeImage();
+  const uploadImage = useUploadRecipeImage();
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleRegenerateImage = async () => {
     if (!recipe) return;
@@ -47,6 +51,42 @@ export function RecipeDetailDialog({
     }
   };
 
+  const handleUploadClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !recipe) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image file');
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image must be less than 5MB');
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      await uploadImage.mutateAsync({ recipeId: recipe.id, file });
+      toast.success('Image uploaded successfully!');
+    } catch (error) {
+      toast.error('Failed to upload image. Please try again.');
+      console.error('Upload error:', error);
+    } finally {
+      setIsUploading(false);
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
   if (!recipe) return null;
   return <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden flex flex-col p-0">
@@ -54,16 +94,35 @@ export function RecipeDetailDialog({
         <div className="relative h-56 w-full">
           <img src={recipe.image_url} alt={recipe.name} className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
-          <Button
-            size="sm"
-            variant="secondary"
-            className="absolute bottom-3 right-3 gap-2"
-            onClick={handleRegenerateImage}
-            disabled={isGenerating}
-          >
-            <RefreshCw className={`w-4 h-4 ${isGenerating ? 'animate-spin' : ''}`} />
-            {isGenerating ? 'Generating...' : 'Regenerate Image'}
-          </Button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handleFileChange}
+          />
+          <div className="absolute bottom-3 right-3 flex gap-2">
+            <Button
+              size="sm"
+              variant="secondary"
+              className="gap-2"
+              onClick={handleUploadClick}
+              disabled={isUploading || isGenerating}
+            >
+              <Upload className="w-4 h-4" />
+              {isUploading ? 'Uploading...' : 'Upload'}
+            </Button>
+            <Button
+              size="sm"
+              variant="secondary"
+              className="gap-2"
+              onClick={handleRegenerateImage}
+              disabled={isGenerating || isUploading}
+            >
+              <RefreshCw className={`w-4 h-4 ${isGenerating ? 'animate-spin' : ''}`} />
+              {isGenerating ? 'Generating...' : 'AI Generate'}
+            </Button>
+          </div>
         </div>
 
         {/* Content */}
