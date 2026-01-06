@@ -75,7 +75,9 @@ interface NutritionBarProps {
 }
 
 export function NutritionBar({ value, max, color, label, unit = 'g' }: NutritionBarProps) {
-  const percentage = Math.min((value / max) * 100, 100);
+  const rawPercentage = (value / max) * 100;
+  const percentage = Math.min(rawPercentage, 100);
+  const isOverGoal = rawPercentage > 100;
 
   return (
     <div className="flex-1 min-w-[100px]">
@@ -87,7 +89,13 @@ export function NutritionBar({ value, max, color, label, unit = 'g' }: Nutrition
         />
       </div>
       <p className="text-sm text-muted-foreground text-center mt-2">
-        {value} / {max} {unit} <span className="font-medium" style={{ color }}>({Math.round(percentage)}%)</span>
+        {value} / {max} {unit}{' '}
+        <span 
+          className="font-medium" 
+          style={{ color: isOverGoal ? 'hsl(var(--destructive))' : color }}
+        >
+          ({Math.round(rawPercentage)}%)
+        </span>
       </p>
     </div>
   );
