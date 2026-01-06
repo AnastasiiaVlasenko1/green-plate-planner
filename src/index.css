@@ -10,7 +10,7 @@
   :root {
     /* Primary - Vibrant Green */
     --primary: 88 50% 53%;
-    --primary-foreground: 0 0% 100%;
+    --primary-foreground: 0 0% 0%;
     
     /* Background & Surfaces */
     --background: 0 0% 100%;
@@ -52,7 +52,7 @@
     --sidebar-background: 0 0% 100%;
     --sidebar-foreground: 220 14% 15%;
     --sidebar-primary: 88 50% 53%;
-    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-primary-foreground: 0 0% 0%;
     --sidebar-accent: 0 0% 96%;
     --sidebar-accent-foreground: 220 14% 15%;
     --sidebar-border: 220 13% 91%;
@@ -75,7 +75,7 @@
 
   .dark {
     --primary: 88 50% 53%;
-    --primary-foreground: 0 0% 100%;
+    --primary-foreground: 0 0% 0%;
     
     --background: 220 14% 10%;
     --foreground: 0 0% 95%;
@@ -105,7 +105,7 @@
     --sidebar-background: 220 14% 10%;
     --sidebar-foreground: 0 0% 95%;
     --sidebar-primary: 88 50% 53%;
-    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-primary-foreground: 0 0% 0%;
     --sidebar-accent: 220 14% 18%;
     --sidebar-accent-foreground: 0 0% 95%;
     --sidebar-border: 220 14% 22%;
