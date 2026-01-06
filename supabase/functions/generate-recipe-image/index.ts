@@ -14,12 +14,66 @@ serve(async (req) => {
   }
 
   try {
+    // Validate authentication
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+
+    // Create client with user's auth to validate token
+    const userClient = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } }
+    });
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: claimsData, error: claimsError } = await userClient.auth.getClaims(token);
+    
+    if (claimsError || !claimsData?.claims) {
+      console.error('Auth error:', claimsError);
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const userId = claimsData.claims.sub;
+    console.log(`Authenticated user: ${userId}`);
+
     const { recipeId, recipeName, ingredients } = await req.json();
 
     if (!recipeId || !recipeName) {
       return new Response(
         JSON.stringify({ error: 'Recipe ID and name are required' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Verify user owns the recipe or recipe is public
+    const { data: recipe, error: recipeError } = await userClient
+      .from('recipes')
+      .select('id, created_by, is_public')
+      .eq('id', recipeId)
+      .single();
+
+    if (recipeError || !recipe) {
+      return new Response(
+        JSON.stringify({ error: 'Recipe not found' }),
+        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Only allow image generation for user's own recipes
+    if (recipe.created_by !== userId) {
+      return new Response(
+        JSON.stringify({ error: 'You can only generate images for your own recipes' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -71,14 +125,13 @@ serve(async (req) => {
     const base64Data = imageData.replace(/^data:image\/\w+;base64,/, '');
     const binaryData = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
 
-    // Upload to Supabase Storage
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    // Use service role for storage operations
+    const adminClient = createClient(supabaseUrl, supabaseServiceKey);
 
-    const fileName = `${recipeId}-${Date.now()}.png`;
+    // Store in user's folder for ownership tracking
+    const fileName = `${userId}/${recipeId}-${Date.now()}.png`;
     
-    const { error: uploadError } = await supabase.storage
+    const { error: uploadError } = await adminClient.storage
       .from('recipe-images')
       .upload(fileName, binaryData, {
         contentType: 'image/png',
@@ -91,18 +144,19 @@ serve(async (req) => {
     }
 
     // Get public URL
-    const { data: urlData } = supabase.storage
+    const { data: urlData } = adminClient.storage
       .from('recipe-images')
       .getPublicUrl(fileName);
 
     const publicUrl = urlData.publicUrl;
     console.log(`Image uploaded: ${publicUrl}`);
 
-    // Update recipe with new image URL
-    const { error: updateError } = await supabase
+    // Update recipe with new image URL (using service role to bypass RLS for update)
+    const { error: updateError } = await adminClient
       .from('recipes')
       .update({ image_url: publicUrl })
-      .eq('id', recipeId);
+      .eq('id', recipeId)
+      .eq('created_by', userId); // Double-check ownership
 
     if (updateError) {
       console.error('Update error:', updateError);
