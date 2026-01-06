@@ -19,11 +19,12 @@ serve(async (req) => {
 
     const adminClient = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Fetch all seeded recipes (no owner)
+    // Fetch all seeded recipes (no owner) that don't have AI-generated images yet
     const { data: recipes, error: fetchError } = await adminClient
       .from('recipes')
-      .select('id, name, ingredients')
-      .is('created_by', null);
+      .select('id, name, ingredients, image_url')
+      .is('created_by', null)
+      .not('image_url', 'like', '%recipe-images%');
 
     if (fetchError) {
       console.error('Error fetching recipes:', fetchError);
