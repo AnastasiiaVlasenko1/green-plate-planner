@@ -1,13 +1,7 @@
 import { Link } from 'react-router-dom';
 import { ArrowRight, Clock, Flame } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselPrevious,
-  CarouselNext,
-} from '@/components/ui/carousel';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface Recipe {
   id: string;
@@ -26,12 +20,12 @@ interface QuickRecipesCarouselProps {
 export function QuickRecipesCarousel({ recipes, isLoading }: QuickRecipesCarouselProps) {
   if (isLoading) {
     return (
-      <Card className="card-shadow">
-        <CardHeader className="pb-3">
+      <Card className="card-shadow h-full flex flex-col">
+        <CardHeader className="pb-3 flex-shrink-0">
           <CardTitle className="text-lg">Quick Recipe Ideas</CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <CardContent className="flex-1">
+          <div className="grid grid-cols-2 gap-3">
             {[...Array(4)].map((_, i) => (
               <div key={i} className="aspect-[4/3] bg-muted rounded-lg animate-pulse" />
             ))}
@@ -42,8 +36,8 @@ export function QuickRecipesCarousel({ recipes, isLoading }: QuickRecipesCarouse
   }
 
   return (
-    <Card className="card-shadow">
-      <CardHeader className="pb-3">
+    <Card className="card-shadow h-full flex flex-col">
+      <CardHeader className="pb-3 flex-shrink-0">
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg">Quick Recipe Ideas</CardTitle>
           <Link to="/recipes" className="text-sm text-primary hover:underline flex items-center gap-1">
@@ -52,49 +46,40 @@ export function QuickRecipesCarousel({ recipes, isLoading }: QuickRecipesCarouse
           </Link>
         </div>
       </CardHeader>
-      <CardContent>
-        <Carousel
-          opts={{
-            align: 'start',
-            loop: true,
-          }}
-          className="w-full"
-        >
-          <CarouselContent className="-ml-2 md:-ml-4">
-            {recipes?.slice(0, 8).map((recipe) => (
-              <CarouselItem key={recipe.id} className="pl-2 md:pl-4 basis-1/2 md:basis-1/3 lg:basis-1/4">
-                <Link
-                  to="/recipes"
-                  className="group relative block overflow-hidden rounded-lg aspect-[4/3]"
-                >
-                  <img
-                    src={recipe.image_url}
-                    alt={recipe.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                  <div className="absolute bottom-0 left-0 right-0 p-3">
-                    <p className="font-medium text-white text-sm line-clamp-1">
-                      {recipe.name}
-                    </p>
-                    <div className="flex items-center gap-3 text-white/80 text-xs mt-1">
-                      <span className="flex items-center gap-1">
-                        <Flame className="w-3 h-3" />
-                        {recipe.calories}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Clock className="w-3 h-3" />
-                        {recipe.prep_time + recipe.cook_time}m
-                      </span>
-                    </div>
+      <CardContent className="flex-1 min-h-0">
+        <ScrollArea className="h-full">
+          <div className="grid grid-cols-2 gap-3 pr-2">
+            {recipes?.slice(0, 6).map((recipe) => (
+              <Link
+                key={recipe.id}
+                to="/recipes"
+                className="group relative block overflow-hidden rounded-lg aspect-[4/3]"
+              >
+                <img
+                  src={recipe.image_url}
+                  alt={recipe.name}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                <div className="absolute bottom-0 left-0 right-0 p-2.5">
+                  <p className="font-medium text-white text-xs line-clamp-1">
+                    {recipe.name}
+                  </p>
+                  <div className="flex items-center gap-2 text-white/80 text-[10px] mt-0.5">
+                    <span className="flex items-center gap-0.5">
+                      <Flame className="w-2.5 h-2.5" />
+                      {recipe.calories}
+                    </span>
+                    <span className="flex items-center gap-0.5">
+                      <Clock className="w-2.5 h-2.5" />
+                      {recipe.prep_time + recipe.cook_time}m
+                    </span>
                   </div>
-                </Link>
-              </CarouselItem>
+                </div>
+              </Link>
             ))}
-          </CarouselContent>
-          <CarouselPrevious className="hidden md:flex -left-4" />
-          <CarouselNext className="hidden md:flex -right-4" />
-        </Carousel>
+          </div>
+        </ScrollArea>
       </CardContent>
     </Card>
   );
