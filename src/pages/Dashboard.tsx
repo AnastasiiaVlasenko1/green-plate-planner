@@ -15,6 +15,7 @@ import {
   TodaysMealsCard,
   TomorrowsPlanCard,
   QuickRecipesCarousel,
+  RecommendedRecipesCard,
 } from '@/components/dashboard';
 
 export default function Dashboard() {
@@ -178,7 +179,10 @@ export default function Dashboard() {
         </div>
 
         {/* Bottom Section - Action Cards */}
-        <div className="grid gap-6 lg:grid-cols-2">
+        <div className="grid gap-6 lg:grid-cols-3">
+          {/* AI Recommendations */}
+          <RecommendedRecipesCard />
+          
           {/* Quick Recipe Ideas Carousel */}
           <QuickRecipesCarousel recipes={recipes || []} isLoading={isLoading} />
           
