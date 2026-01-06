@@ -69,8 +69,10 @@ export default function Auth() {
       return;
     }
 
-    if (signupPassword.length < 6) {
-      toast.error('Password must be at least 6 characters');
+    // Enforce minimum 8 characters with at least one uppercase, lowercase, and number
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+    if (!passwordRegex.test(signupPassword)) {
+      toast.error('Password must be at least 8 characters with uppercase, lowercase, and a number');
       return;
     }
 
@@ -179,6 +181,9 @@ export default function Auth() {
                     onChange={(e) => setSignupPassword(e.target.value)}
                     disabled={isSubmitting}
                   />
+                  <p className="text-xs text-muted-foreground">
+                    Min 8 characters with uppercase, lowercase, and a number
+                  </p>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="signup-confirm">Confirm Password</Label>
