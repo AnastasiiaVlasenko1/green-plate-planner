@@ -87,16 +87,16 @@ export function RecipeDetailDialog({
 
           {/* Tabs */}
           <Tabs defaultValue="ingredients" className="flex-1 flex flex-col overflow-hidden mt-4">
-            <TabsList className="bg-transparent h-auto p-0 justify-start gap-6">
+            <TabsList className="bg-transparent h-auto p-0 justify-start gap-6 border-b border-border">
               <TabsTrigger 
                 value="ingredients" 
-                className="bg-transparent px-0 py-2 text-muted-foreground data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none font-medium"
+                className="bg-transparent rounded-none px-0 pb-2 text-muted-foreground data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary font-medium -mb-px"
               >
                 Ingredients
               </TabsTrigger>
               <TabsTrigger 
                 value="instructions"
-                className="bg-transparent px-0 py-2 text-muted-foreground data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none font-medium"
+                className="bg-transparent rounded-none px-0 pb-2 text-muted-foreground data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary font-medium -mb-px"
               >
                 Instructions
               </TabsTrigger>
