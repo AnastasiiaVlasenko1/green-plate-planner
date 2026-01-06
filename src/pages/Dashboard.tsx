@@ -4,7 +4,7 @@ import { Plus } from 'lucide-react';
 import { AppHeader } from '@/components/layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { NutritionRing } from '@/components/nutrition/NutritionDisplay';
+import { NutritionBar } from '@/components/nutrition/NutritionDisplay';
 import { useProfile } from '@/hooks/useProfile';
 import { useMealPlans } from '@/hooks/useMealPlans';
 import { useRecipes } from '@/hooks/useRecipes';
@@ -119,42 +119,37 @@ export default function Dashboard() {
               </div>
             ) : (
               <>
-                <div className="flex flex-wrap justify-around gap-4 md:gap-6">
-                  <NutritionRing
+                <div className="flex flex-wrap justify-center gap-6 md:gap-8">
+                  <NutritionBar
                     value={todayNutrition.calories}
                     max={goals.calories}
                     color="hsl(var(--calories))"
                     label="Calories"
                     unit="kcal"
-                    size="lg"
                   />
-                  <NutritionRing
+                  <NutritionBar
                     value={todayNutrition.protein}
                     max={goals.protein}
                     color="hsl(var(--protein))"
                     label="Protein"
-                    size="lg"
                   />
-                  <NutritionRing
+                  <NutritionBar
                     value={todayNutrition.carbs}
                     max={goals.carbs}
                     color="hsl(var(--carbs))"
                     label="Carbs"
-                    size="lg"
                   />
-                  <NutritionRing
+                  <NutritionBar
                     value={todayNutrition.fat}
                     max={goals.fat}
                     color="hsl(var(--fat))"
                     label="Fat"
-                    size="lg"
                   />
-                  <NutritionRing
+                  <NutritionBar
                     value={todayNutrition.fiber}
                     max={goals.fiber}
                     color="hsl(var(--fiber))"
                     label="Fiber"
-                    size="lg"
                   />
                 </div>
                 <p className="text-center text-sm text-muted-foreground mt-6 max-w-xl mx-auto">
