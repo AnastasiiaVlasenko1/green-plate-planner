@@ -87,7 +87,7 @@ export function NutritionBar({ value, max, color, label, unit = 'g' }: Nutrition
         />
       </div>
       <p className="text-sm text-muted-foreground text-center mt-2">
-        {value} / {max} {unit}
+        {value} / {max} {unit} <span className="font-medium" style={{ color }}>({Math.round(percentage)}%)</span>
       </p>
     </div>
   );
