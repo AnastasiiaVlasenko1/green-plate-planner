@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Search, Filter, Clock, Flame, Users, Plus } from 'lucide-react';
+import { Search, Clock, Flame, Users, Plus } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { AppHeader } from '@/components/layout';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -88,10 +89,6 @@ export default function Recipes() {
                 className="pl-10"
               />
             </div>
-            <Button variant="outline" className="gap-2">
-              <Filter className="w-4 h-4" />
-              Filters
-            </Button>
             <Button className="gap-2" onClick={() => setShowAddRecipeDialog(true)}>
               <Plus className="w-4 h-4" />
               Add Recipe
@@ -102,8 +99,14 @@ export default function Recipes() {
             {tagFilters.map((tag) => (
               <Badge
                 key={tag}
-                variant={selectedTags.includes(tag) ? 'default' : 'secondary'}
-                className="cursor-pointer capitalize"
+                variant={selectedTags.includes(tag) ? 'default' : 'outline'}
+                className={cn(
+                  "cursor-pointer capitalize transition-all duration-200",
+                  "hover:scale-105 hover:shadow-sm",
+                  selectedTags.includes(tag) 
+                    ? "ring-2 ring-primary/20" 
+                    : "hover:bg-secondary/80 hover:border-primary/30"
+                )}
                 onClick={() => toggleTag(tag)}
               >
                 {tag}
