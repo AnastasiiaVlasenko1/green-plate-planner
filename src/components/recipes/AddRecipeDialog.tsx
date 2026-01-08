@@ -5,6 +5,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogFooter,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -174,12 +175,12 @@ export function AddRecipeDialog({ open, onOpenChange }: AddRecipeDialogProps) {
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] p-0">
-        <DialogHeader className="p-6 pb-0">
+        <DialogHeader className="p-6 pb-4 border-b">
           <DialogTitle className="text-xl">Add New Recipe</DialogTitle>
         </DialogHeader>
 
-        <ScrollArea className="max-h-[calc(90vh-140px)] px-6">
-          <div className="space-y-6 py-4">
+        <ScrollArea className="max-h-[calc(90vh-140px)]">
+          <div className="space-y-6 p-6">
             {/* AI hint */}
             <div className="flex items-center gap-2 p-3 bg-primary/10 rounded-lg text-sm">
               <Sparkles className="w-4 h-4 text-primary flex-shrink-0" />
@@ -473,8 +474,7 @@ export function AddRecipeDialog({ open, onOpenChange }: AddRecipeDialogProps) {
           </div>
         </ScrollArea>
 
-        {/* Actions */}
-        <div className="flex justify-end gap-3 p-6 pt-4 border-t">
+        <DialogFooter className="p-6 pt-4 border-t">
           <Button
             variant="outline"
             onClick={handleClose}
@@ -495,7 +495,7 @@ export function AddRecipeDialog({ open, onOpenChange }: AddRecipeDialogProps) {
               'Save Recipe'
             )}
           </Button>
-        </div>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
