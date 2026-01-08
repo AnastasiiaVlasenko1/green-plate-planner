@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Search, Clock, Flame, Users, Plus } from 'lucide-react';
+import { Search, Clock, Flame, Users, Plus, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { AppHeader } from '@/components/layout';
 import { Input } from '@/components/ui/input';
@@ -8,12 +8,12 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
+import { FilterChip } from '@/components/ui/filter-chip';
 import { useRecipes, Recipe } from '@/hooks/useRecipes';
 import { useAddMealPlan, MealType } from '@/hooks/useMealPlans';
 import { toast } from 'sonner';
 import { RecipeDetailDialog } from '@/components/recipes/RecipeDetailDialog';
 import { AddRecipeDialog } from '@/components/recipes/AddRecipeDialog';
-
 const tagFilters = [
   'breakfast',
   'lunch',
@@ -95,24 +95,42 @@ export default function Recipes() {
             </Button>
           </div>
 
+          {/* Filter Chips */}
           <div className="flex flex-wrap gap-2">
             {tagFilters.map((tag) => (
-              <Badge
+              <FilterChip
                 key={tag}
-                variant={selectedTags.includes(tag) ? 'default' : 'outline'}
-                className={cn(
-                  "cursor-pointer capitalize transition-all duration-200",
-                  "hover:scale-105 hover:shadow-sm",
-                  selectedTags.includes(tag) 
-                    ? "ring-2 ring-primary/20" 
-                    : "hover:bg-secondary/80 hover:border-primary/30"
-                )}
+                selected={selectedTags.includes(tag)}
                 onClick={() => toggleTag(tag)}
+                className="capitalize"
               >
                 {tag}
-              </Badge>
+              </FilterChip>
             ))}
+            
+            {/* Clear All Button */}
+            {selectedTags.length > 0 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-10 px-3 text-sm text-muted-foreground hover:text-foreground"
+                onClick={() => setSelectedTags([])}
+              >
+                <X className="w-4 h-4 mr-1" />
+                Clear all
+              </Button>
+            )}
           </div>
+
+          {/* Results Count */}
+          {!isLoading && recipes && (
+            <p className="text-sm text-muted-foreground">
+              Showing <span className="font-medium text-foreground">{recipes.length}</span> {recipes.length === 1 ? 'recipe' : 'recipes'}
+              {selectedTags.length > 0 && (
+                <span> for {selectedTags.length} {selectedTags.length === 1 ? 'filter' : 'filters'}</span>
+              )}
+            </p>
+          )}
         </div>
 
         {/* Recipe Grid */}
