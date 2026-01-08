@@ -22,6 +22,7 @@ interface CreateRecipeInput {
   fiber?: number;
   tags?: string[];
   image?: File;
+  isPublic?: boolean;
 }
 
 interface CompletedRecipeData {
@@ -125,7 +126,7 @@ export const useCreateRecipe = () => {
           : (completedData.tags || []),
         allergens: completedData.allergens || [],
         created_by: user.id,
-        is_public: false,
+        is_public: input.isPublic ?? false,
         image_url: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&auto=format&fit=crop" // Placeholder
       };
 

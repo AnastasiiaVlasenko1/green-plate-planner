@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { Plus, Trash2, Upload, Loader2, Sparkles } from 'lucide-react';
+import { Plus, Trash2, Upload, Loader2, Sparkles, Globe } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -13,7 +13,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Switch } from '@/components/ui/switch';
 import { useCreateRecipe } from '@/hooks/useCreateRecipe';
+import { useUserRole } from '@/hooks/useUserRole';
 
 interface Ingredient {
   amount: string;
@@ -30,6 +32,7 @@ const dietTypes = ['vegetarian', 'vegan', 'gluten-free', 'high-protein', 'quick'
 
 export function AddRecipeDialog({ open, onOpenChange }: AddRecipeDialogProps) {
   const createRecipe = useCreateRecipe();
+  const { isAdmin } = useUserRole();
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   // Form state
@@ -48,6 +51,7 @@ export function AddRecipeDialog({ open, onOpenChange }: AddRecipeDialogProps) {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [image, setImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [isPublic, setIsPublic] = useState(false);
 
   const resetForm = () => {
     setName('');
@@ -65,6 +69,7 @@ export function AddRecipeDialog({ open, onOpenChange }: AddRecipeDialogProps) {
     setSelectedTags([]);
     setImage(null);
     setImagePreview(null);
+    setIsPublic(false);
   };
 
   const handleClose = () => {
@@ -165,6 +170,7 @@ export function AddRecipeDialog({ open, onOpenChange }: AddRecipeDialogProps) {
       fiber: fiber ? parseInt(fiber) : undefined,
       tags: selectedTags.length > 0 ? selectedTags : undefined,
       image: image || undefined,
+      isPublic: isAdmin ? isPublic : false,
     });
 
     handleClose();
@@ -471,6 +477,24 @@ export function AddRecipeDialog({ open, onOpenChange }: AddRecipeDialogProps) {
                 </Button>
               )}
             </div>
+
+            {/* Admin: Public Recipe Toggle */}
+            {isAdmin && (
+              <div className="flex items-center justify-between p-4 border rounded-lg bg-muted/50">
+                <div className="flex items-center gap-3">
+                  <Globe className="w-5 h-5 text-primary" />
+                  <div>
+                    <Label htmlFor="public-toggle" className="cursor-pointer">Make recipe public</Label>
+                    <p className="text-xs text-muted-foreground">Visible to all users</p>
+                  </div>
+                </div>
+                <Switch
+                  id="public-toggle"
+                  checked={isPublic}
+                  onCheckedChange={setIsPublic}
+                />
+              </div>
+            )}
           </div>
         </ScrollArea>
 
