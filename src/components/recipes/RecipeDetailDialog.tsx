@@ -299,7 +299,7 @@ export function RecipeDetailDialog({
         </div>
 
         {/* Tabs with scrollable content */}
-        <Tabs defaultValue="ingredients" className="flex-1 flex flex-col min-h-0 mt-4">
+        <Tabs defaultValue="ingredients" className="flex-1 flex flex-col overflow-hidden mt-4">
           <TabsList className="bg-transparent h-auto p-0 justify-start gap-6 border-b border-border flex-shrink-0">
             <TabsTrigger value="ingredients" className="bg-transparent rounded-none px-0 pb-2 text-muted-foreground data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary font-medium -mb-px">
               Ingredients
@@ -309,46 +309,45 @@ export function RecipeDetailDialog({
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="ingredients" className="flex-1 min-h-0 mt-4 data-[state=inactive]:hidden">
-            <ScrollArea className="h-full max-h-[40vh] md:max-h-[200px]">
-              <ul className="space-y-2 pr-4">
-                {recipe.ingredients.map((ing, i) => (
-                  <li key={i} className="flex items-start gap-3 text-base">
-                    <span className="min-w-[5rem] flex-shrink-0 text-muted-foreground font-medium">
-                      {ing.amount || (ing as any).quantity}
+          <TabsContent value="ingredients" className="flex-1 min-h-0 mt-4 data-[state=inactive]:hidden overflow-auto">
+            <ul className="space-y-2 pr-4">
+              {recipe.ingredients.map((ing, i) => (
+                <li key={i} className="flex items-start gap-3 text-base">
+                  <span className="min-w-[5rem] flex-shrink-0 text-muted-foreground font-medium">
+                    {ing.amount || (ing as any).quantity}
+                  </span>
+                  <span className="text-foreground">{ing.name}</span>
+                </li>
+              ))}
+            </ul>
+          </TabsContent>
+
+          <TabsContent value="instructions" className="flex-1 min-h-0 mt-4 data-[state=inactive]:hidden overflow-auto">
+            {recipe.instructions && recipe.instructions.length > 0 ? (
+              <ol className="space-y-4 pr-4">
+                {recipe.instructions.map((step, i) => (
+                  <li key={i} className="flex gap-4">
+                    <span className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-sm font-medium text-foreground bg-secondary">
+                      {i + 1}
                     </span>
-                    <span className="text-foreground">{ing.name}</span>
+                    <p className="text-base text-foreground pt-0.5">{step}</p>
                   </li>
                 ))}
-              </ul>
-            </ScrollArea>
-          </TabsContent>
-
-          <TabsContent value="instructions" className="flex-1 min-h-0 mt-4 data-[state=inactive]:hidden">
-            <ScrollArea className="h-full max-h-[40vh] md:max-h-[200px]">
-              {recipe.instructions && recipe.instructions.length > 0 ? (
-                <ol className="space-y-4 pr-4">
-                  {recipe.instructions.map((step, i) => (
-                    <li key={i} className="flex gap-4">
-                      <span className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-sm font-medium text-foreground bg-secondary">
-                        {i + 1}
-                      </span>
-                      <p className="text-base text-foreground pt-0.5">{step}</p>
-                    </li>
-                  ))}
-                </ol>
-              ) : (
-                <p className="text-base text-muted-foreground italic">
-                  No instructions available for this recipe.
-                </p>
-              )}
-            </ScrollArea>
+              </ol>
+            ) : (
+              <p className="text-base text-muted-foreground italic">
+                No instructions available for this recipe.
+              </p>
+            )}
           </TabsContent>
         </Tabs>
+      </div>
 
+      {/* Fixed Footer: Tags + Actions */}
+      <div className="flex-shrink-0 px-4 md:px-6 pb-4 pt-3 border-t border-border bg-background">
         {/* Tags */}
         {recipe.tags && recipe.tags.length > 0 && (
-          <div className="flex flex-wrap gap-2 pt-4 border-t border-border mt-4 flex-shrink-0">
+          <div className="flex flex-wrap gap-2 mb-3">
             {recipe.tags.map(tag => (
               <Badge key={tag} variant="secondary" className="capitalize">
                 {tag}
@@ -357,8 +356,8 @@ export function RecipeDetailDialog({
           </div>
         )}
 
-        {/* Actions - simplified for mobile since edit/delete are now icon buttons */}
-        <div className="flex gap-2 mt-4 flex-shrink-0">
+        {/* Actions */}
+        <div className="flex gap-2">
           {onAddToPlan && (
             <Button className="flex-1" onClick={onAddToPlan}>
               Add to Meal Plan
@@ -387,11 +386,9 @@ export function RecipeDetailDialog({
                 <DrawerTitle className="sr-only">{recipe.name}</DrawerTitle>
               </DrawerHeader>
             </div>
-            <ScrollArea className="flex-1 h-full">
-              <div className="flex flex-col">
-                {recipeContent}
-              </div>
-            </ScrollArea>
+            <div className="flex-1 overflow-auto flex flex-col">
+              {recipeContent}
+            </div>
           </DrawerContent>
         </Drawer>
 
