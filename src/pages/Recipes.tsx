@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Search, Filter, Clock, Flame, Users } from 'lucide-react';
+import { Search, Filter, Clock, Flame, Users, Plus } from 'lucide-react';
 import { AppHeader } from '@/components/layout';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -11,6 +11,7 @@ import { useRecipes, Recipe } from '@/hooks/useRecipes';
 import { useAddMealPlan, MealType } from '@/hooks/useMealPlans';
 import { toast } from 'sonner';
 import { RecipeDetailDialog } from '@/components/recipes/RecipeDetailDialog';
+import { AddRecipeDialog } from '@/components/recipes/AddRecipeDialog';
 
 const tagFilters = [
   'breakfast',
@@ -37,10 +38,10 @@ export default function Recipes() {
   const [search, setSearch] = useState('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [selectedRecipeId, setSelectedRecipeId] = useState<string | null>(null);
-  const [showAddDialog, setShowAddDialog] = useState(false);
+  const [showAddToPlanDialog, setShowAddToPlanDialog] = useState(false);
+  const [showAddRecipeDialog, setShowAddRecipeDialog] = useState(false);
   const [addDate, setAddDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [addMealType, setAddMealType] = useState<MealType>('lunch');
-
   const { data: recipes, isLoading } = useRecipes(search, selectedTags.length > 0 ? selectedTags : undefined);
   const addMealPlan = useAddMealPlan();
 
@@ -63,7 +64,7 @@ export default function Recipes() {
         mealType: addMealType,
       });
       toast.success(`Added ${selectedRecipe.name} to your meal plan!`);
-      setShowAddDialog(false);
+      setShowAddToPlanDialog(false);
       setSelectedRecipeId(null);
     } catch (error) {
       toast.error('Failed to add to meal plan');
@@ -90,6 +91,10 @@ export default function Recipes() {
             <Button variant="outline" className="gap-2">
               <Filter className="w-4 h-4" />
               Filters
+            </Button>
+            <Button className="gap-2" onClick={() => setShowAddRecipeDialog(true)}>
+              <Plus className="w-4 h-4" />
+              Add Recipe
             </Button>
           </div>
 
@@ -138,7 +143,7 @@ export default function Recipes() {
                     onClick={(e) => {
                       e.stopPropagation();
                       setSelectedRecipeId(recipe.id);
-                      setShowAddDialog(true);
+                      setShowAddToPlanDialog(true);
                     }}
                   >
                     Add to Plan
@@ -182,13 +187,13 @@ export default function Recipes() {
       {/* Recipe Detail Dialog */}
       <RecipeDetailDialog
         recipe={selectedRecipe}
-        open={!!selectedRecipe && !showAddDialog}
+        open={!!selectedRecipe && !showAddToPlanDialog}
         onOpenChange={(open) => !open && setSelectedRecipeId(null)}
-        onAddToPlan={() => setShowAddDialog(true)}
+        onAddToPlan={() => setShowAddToPlanDialog(true)}
       />
 
       {/* Add to Planner Dialog */}
-      <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
+      <Dialog open={showAddToPlanDialog} onOpenChange={setShowAddToPlanDialog}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Add to Meal Plan</DialogTitle>
@@ -228,6 +233,12 @@ export default function Recipes() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Add Recipe Dialog */}
+      <AddRecipeDialog
+        open={showAddRecipeDialog}
+        onOpenChange={setShowAddRecipeDialog}
+      />
     </>
   );
 }
