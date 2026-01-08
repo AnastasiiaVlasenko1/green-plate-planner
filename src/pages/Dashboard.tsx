@@ -23,12 +23,29 @@ export default function Dashboard() {
   const { data: mealPlans, isLoading: mealsLoading } = useMealPlans();
   const { data: recipes, isLoading: recipesLoading } = useRecipes();
 
-  // Calculate today's nutrition
+  // Calculate today's nutrition - CONSUMED only (for overview rings)
   const todaysMeals = mealPlans?.filter(
     (plan) => isToday(new Date(plan.plan_date))
   ) || [];
 
-  const todayNutrition = todaysMeals.reduce(
+  const consumedNutrition = todaysMeals
+    .filter((plan) => plan.is_consumed)
+    .reduce(
+      (acc, plan) => {
+        if (plan.recipe) {
+          acc.calories += plan.recipe.calories * plan.servings;
+          acc.protein += plan.recipe.protein * plan.servings;
+          acc.carbs += plan.recipe.carbs * plan.servings;
+          acc.fat += plan.recipe.fat * plan.servings;
+          acc.fiber += plan.recipe.fiber * plan.servings;
+        }
+        return acc;
+      },
+      { calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0 }
+    );
+
+  // Total planned nutrition (for insights)
+  const plannedNutrition = todaysMeals.reduce(
     (acc, plan) => {
       if (plan.recipe) {
         acc.calories += plan.recipe.calories * plan.servings;
@@ -50,13 +67,18 @@ export default function Dashboard() {
     fiber: profile?.fiber_goal || 30,
   };
 
+  const consumedMealsCount = todaysMeals.filter((m) => m.is_consumed).length;
+
   // Generate smart insight based on current progress
   const getSmartInsight = () => {
-    const caloriePercent = (todayNutrition.calories / goals.calories) * 100;
-    const proteinPercent = (todayNutrition.protein / goals.protein) * 100;
+    const caloriePercent = (consumedNutrition.calories / goals.calories) * 100;
+    const proteinPercent = (consumedNutrition.protein / goals.protein) * 100;
     
     if (todaysMeals.length === 0) {
       return "Start your day right! Plan your meals to stay on track with your nutrition goals.";
+    }
+    if (consumedMealsCount === 0) {
+      return "👆 Check off meals as you eat them to track your progress!";
     }
     if (proteinPercent < 30 && caloriePercent > 40) {
       return "💡 Tip: Your protein intake is low compared to calories. Consider adding lean proteins to your next meal.";
@@ -98,7 +120,7 @@ export default function Dashboard() {
         {/* Smart Insights Bar */}
         {!isLoading && (
           <SmartInsightsBar
-            todayNutrition={todayNutrition}
+            todayNutrition={consumedNutrition}
             goals={goals}
             mealsPlanned={todaysMeals.length}
             streak={3} // TODO: Calculate actual streak from data
@@ -121,32 +143,32 @@ export default function Dashboard() {
               <>
                 <div className="flex flex-wrap justify-center gap-6 md:gap-8">
                   <NutritionBar
-                    value={todayNutrition.calories}
+                    value={consumedNutrition.calories}
                     max={goals.calories}
                     color="hsl(var(--calories))"
                     label="Calories"
                     unit="kcal"
                   />
                   <NutritionBar
-                    value={todayNutrition.protein}
+                    value={consumedNutrition.protein}
                     max={goals.protein}
                     color="hsl(var(--protein))"
                     label="Protein"
                   />
                   <NutritionBar
-                    value={todayNutrition.carbs}
+                    value={consumedNutrition.carbs}
                     max={goals.carbs}
                     color="hsl(var(--carbs))"
                     label="Carbs"
                   />
                   <NutritionBar
-                    value={todayNutrition.fat}
+                    value={consumedNutrition.fat}
                     max={goals.fat}
                     color="hsl(var(--fat))"
                     label="Fat"
                   />
                   <NutritionBar
-                    value={todayNutrition.fiber}
+                    value={consumedNutrition.fiber}
                     max={goals.fiber}
                     color="hsl(var(--fiber))"
                     label="Fiber"

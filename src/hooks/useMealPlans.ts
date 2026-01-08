@@ -12,6 +12,8 @@ export interface MealPlan {
   plan_date: string;
   meal_type: MealType;
   servings: number;
+  is_consumed: boolean;
+  consumed_at: string | null;
   created_at: string;
   recipe?: {
     id: string;
@@ -102,6 +104,27 @@ export function useRemoveMealPlan() {
       const { error } = await supabase
         .from('meal_plans')
         .delete()
+        .eq('id', mealPlanId);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['mealPlans'] });
+    },
+  });
+}
+
+export function useToggleMealConsumed() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ mealPlanId, isConsumed }: { mealPlanId: string; isConsumed: boolean }) => {
+      const { error } = await supabase
+        .from('meal_plans')
+        .update({
+          is_consumed: isConsumed,
+          consumed_at: isConsumed ? new Date().toISOString() : null,
+        })
         .eq('id', mealPlanId);
       
       if (error) throw error;

@@ -1,11 +1,10 @@
 import { Link } from 'react-router-dom';
-import { Check, Clock, Flame, ArrowRight } from 'lucide-react';
+import { Flame, ArrowRight, Loader2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { cn } from '@/lib/utils';
-import { MealPlan, MealType } from '@/hooks/useMealPlans';
-import { useState } from 'react';
+import { MealPlan, MealType, useToggleMealConsumed } from '@/hooks/useMealPlans';
 
 const mealTypeLabels: Record<MealType, string> = {
   breakfast: 'Breakfast',
@@ -31,17 +30,12 @@ interface TodaysMealsCardProps {
 }
 
 export function TodaysMealsCard({ meals, isLoading }: TodaysMealsCardProps) {
-  const [checkedMeals, setCheckedMeals] = useState<Set<string>>(new Set());
+  const toggleConsumed = useToggleMealConsumed();
 
-  const toggleMeal = (mealId: string) => {
-    setCheckedMeals((prev) => {
-      const next = new Set(prev);
-      if (next.has(mealId)) {
-        next.delete(mealId);
-      } else {
-        next.add(mealId);
-      }
-      return next;
+  const handleToggle = (meal: MealPlan) => {
+    toggleConsumed.mutate({
+      mealPlanId: meal.id,
+      isConsumed: !meal.is_consumed,
     });
   };
 
@@ -51,7 +45,7 @@ export function TodaysMealsCard({ meals, isLoading }: TodaysMealsCardProps) {
   });
 
   const consumedCalories = sortedMeals
-    .filter((meal) => checkedMeals.has(meal.id))
+    .filter((meal) => meal.is_consumed)
     .reduce((acc, meal) => acc + (meal.recipe?.calories || 0) * meal.servings, 0);
 
   const totalCalories = sortedMeals.reduce(
@@ -103,7 +97,8 @@ export function TodaysMealsCard({ meals, isLoading }: TodaysMealsCardProps) {
         ) : (
           <div className="space-y-2">
             {sortedMeals.map((meal) => {
-              const isChecked = checkedMeals.has(meal.id);
+              const isChecked = meal.is_consumed;
+              const isToggling = toggleConsumed.isPending && toggleConsumed.variables?.mealPlanId === meal.id;
               return (
                 <div
                   key={meal.id}
@@ -111,13 +106,18 @@ export function TodaysMealsCard({ meals, isLoading }: TodaysMealsCardProps) {
                     'flex items-center gap-3 p-3 rounded-lg transition-all cursor-pointer',
                     isChecked ? 'bg-primary/5 border border-primary/20' : 'bg-secondary hover:bg-secondary/80'
                   )}
-                  onClick={() => toggleMeal(meal.id)}
+                  onClick={() => !isToggling && handleToggle(meal)}
                 >
-                  <Checkbox
-                    checked={isChecked}
-                    onCheckedChange={() => toggleMeal(meal.id)}
-                    className="data-[state=checked]:bg-primary data-[state=checked]:border-primary"
-                  />
+                  {isToggling ? (
+                    <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                  ) : (
+                    <Checkbox
+                      checked={isChecked}
+                      onCheckedChange={() => handleToggle(meal)}
+                      onClick={(e) => e.stopPropagation()}
+                      className="data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+                    />
+                  )}
                   <img
                     src={meal.recipe?.image_url}
                     alt={meal.recipe?.name}
