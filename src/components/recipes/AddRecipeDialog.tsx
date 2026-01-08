@@ -474,7 +474,7 @@ export function AddRecipeDialog({ open, onOpenChange }: AddRecipeDialogProps) {
           </div>
         </ScrollArea>
 
-        <DialogFooter className="p-6 pt-4 border-t">
+        <DialogFooter className="p-6 pt-4 border-t bg-background gap-3">
           <Button
             variant="outline"
             onClick={handleClose}
