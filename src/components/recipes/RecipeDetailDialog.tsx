@@ -229,6 +229,16 @@ export function RecipeDetailDialog({
         <div className="pb-2">
           <h2 className="text-xl md:text-2xl font-semibold">{recipe.name}</h2>
           <p className="text-sm text-muted-foreground">{recipe.description}</p>
+          {/* Tags */}
+          {recipe.tags && recipe.tags.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-2">
+              {recipe.tags.map(tag => (
+                <Badge key={tag} variant="secondary" className="capitalize">
+                  {tag}
+                </Badge>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Admin: Public/Private Toggle */}
@@ -343,20 +353,8 @@ export function RecipeDetailDialog({
         </Tabs>
       </div>
 
-      {/* Fixed Footer: Tags + Actions */}
+      {/* Fixed Footer: Actions */}
       <div className="flex-shrink-0 px-4 md:px-6 pb-4 pt-3 border-t border-border bg-background">
-        {/* Tags */}
-        {recipe.tags && recipe.tags.length > 0 && (
-          <div className="flex flex-wrap gap-2 mb-3">
-            {recipe.tags.map(tag => (
-              <Badge key={tag} variant="secondary" className="capitalize">
-                {tag}
-              </Badge>
-            ))}
-          </div>
-        )}
-
-        {/* Actions */}
         <div className="flex gap-2">
           {onAddToPlan && (
             <Button className="flex-1" onClick={onAddToPlan}>
