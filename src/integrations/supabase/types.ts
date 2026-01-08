@@ -49,8 +49,10 @@ export type Database = {
       }
       meal_plans: {
         Row: {
+          consumed_at: string | null
           created_at: string
           id: string
+          is_consumed: boolean
           meal_type: string
           plan_date: string
           recipe_id: string
@@ -58,8 +60,10 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          consumed_at?: string | null
           created_at?: string
           id?: string
+          is_consumed?: boolean
           meal_type: string
           plan_date: string
           recipe_id: string
@@ -67,8 +71,10 @@ export type Database = {
           user_id: string
         }
         Update: {
+          consumed_at?: string | null
           created_at?: string
           id?: string
+          is_consumed?: boolean
           meal_type?: string
           plan_date?: string
           recipe_id?: string
