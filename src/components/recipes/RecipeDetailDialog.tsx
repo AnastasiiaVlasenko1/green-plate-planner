@@ -371,22 +371,259 @@ export function RecipeDetailDialog({
     </>
   );
 
-  // Mobile: Full-screen drawer with swipe-down to close
+  // Mobile: Full-screen drawer with fixed header/footer and scrollable content
   if (isMobile) {
     return (
       <>
         <Drawer open={open} onOpenChange={onOpenChange}>
-          <DrawerContent className="h-[100dvh] max-h-[100dvh] rounded-none">
-            {/* Sticky header with close indicator */}
-            <div className="sticky top-0 z-10 bg-background border-b">
-              <DrawerHeader className="py-3 px-4">
-                <div className="mx-auto w-12 h-1.5 rounded-full bg-muted mb-2" />
-                <DrawerTitle className="sr-only">{recipe.name}</DrawerTitle>
-              </DrawerHeader>
+          <DrawerContent className="h-[100dvh] max-h-[100dvh] rounded-none flex flex-col">
+            {/* Fixed Header: Drag handle + Recipe name + Close button */}
+            <div className="flex-shrink-0 bg-background">
+              <div className="mx-auto w-12 h-1.5 rounded-full bg-muted mt-3 mb-2" />
+              <div className="px-4 py-2 border-b border-border flex items-center gap-3">
+                <DrawerTitle className="text-lg font-semibold truncate flex-1">
+                  {recipe.name}
+                </DrawerTitle>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="flex-shrink-0 -mr-2"
+                  onClick={() => onOpenChange(false)}
+                >
+                  <X className="w-5 h-5" />
+                  <span className="sr-only">Close</span>
+                </Button>
+              </div>
             </div>
-            <div className="flex-1 overflow-auto flex flex-col">
-              {recipeContent}
+            
+            {/* Scrollable Content */}
+            <div className="flex-1 overflow-auto">
+              {/* Hero Image */}
+              <div className="relative h-48 w-full flex-shrink-0">
+                <img src={recipe.image_url} alt={recipe.name} className="w-full h-full object-cover" />
+                <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleFileChange}
+                />
+                
+                {/* Edit/Delete buttons */}
+                {isOwnRecipe && (
+                  <div className="absolute top-3 left-3 flex flex-col gap-2">
+                    <Button
+                      size="icon"
+                      variant="secondary"
+                      className="w-10 h-10 rounded-full shadow-lg"
+                      onClick={() => setShowEditDialog(true)}
+                    >
+                      <Pencil className="w-4 h-4" />
+                      <span className="sr-only">Edit recipe</span>
+                    </Button>
+                    <Button
+                      size="icon"
+                      variant="destructive"
+                      className="w-10 h-10 rounded-full shadow-lg"
+                      onClick={() => setShowDeleteDialog(true)}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      <span className="sr-only">Delete recipe</span>
+                    </Button>
+                  </div>
+                )}
+                
+                {/* Upload/Regenerate buttons */}
+                {isOwnRecipe && (
+                  <div className="absolute bottom-3 right-3 flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      className="gap-2"
+                      onClick={handleUploadClick}
+                      disabled={isUploading || isGenerating}
+                    >
+                      <Upload className="w-4 h-4" />
+                      <span className="hidden sm:inline">{isUploading ? 'Uploading...' : 'Upload'}</span>
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      className="gap-2"
+                      onClick={handleRegenerateImage}
+                      disabled={isGenerating || isUploading}
+                    >
+                      <RefreshCw className={`w-4 h-4 ${isGenerating ? 'animate-spin' : ''}`} />
+                      <span className="hidden sm:inline">{isGenerating ? 'Generating...' : 'AI Generate'}</span>
+                    </Button>
+                  </div>
+                )}
+                {!isOwnRecipe && user && (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="absolute bottom-3 right-3">
+                          <Badge variant="secondary" className="text-xs">
+                            Public Recipe
+                          </Badge>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Image editing is only available for your own recipes</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
+              </div>
+
+              {/* Content */}
+              <div className="px-4 pb-4">
+                {/* Description */}
+                <div className="py-2">
+                  <p className="text-sm text-muted-foreground">{recipe.description}</p>
+                  {/* Tags */}
+                  {recipe.tags && recipe.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {recipe.tags.map(tag => (
+                        <Badge key={tag} variant="secondary" className="capitalize">
+                          {tag}
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Admin: Public/Private Toggle */}
+                {isOwnRecipe && isAdmin && (
+                  <div className="flex items-center justify-between py-3 px-4 border rounded-lg bg-muted/50 mb-3">
+                    <div className="flex items-center gap-3">
+                      {recipe.is_public ? (
+                        <Globe className="w-5 h-5 text-primary" />
+                      ) : (
+                        <Lock className="w-5 h-5 text-muted-foreground" />
+                      )}
+                      <div>
+                        <Label htmlFor="public-toggle-mobile" className="cursor-pointer">
+                          {recipe.is_public ? 'Public Recipe' : 'Private Recipe'}
+                        </Label>
+                        <p className="text-xs text-muted-foreground">
+                          {recipe.is_public ? 'Visible to all users' : 'Only visible to you'}
+                        </p>
+                      </div>
+                    </div>
+                    <Switch
+                      id="public-toggle-mobile"
+                      checked={recipe.is_public}
+                      onCheckedChange={handleTogglePublic}
+                      disabled={updateRecipe.isPending}
+                    />
+                  </div>
+                )}
+
+                {/* Quick Stats */}
+                <div className="flex flex-wrap items-center gap-3 py-3 text-sm border-b border-border">
+                  <div className="flex items-center gap-1.5">
+                    <Clock className="w-4 h-4 text-muted-foreground" />
+                    <span>Prep: {recipe.prep_time}m</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <Clock className="w-4 h-4 text-muted-foreground" />
+                    <span>Cook: {recipe.cook_time}m</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <Users className="w-4 h-4 text-muted-foreground" />
+                    <span>{recipe.servings} servings</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <Flame className="w-4 h-4 text-calories" />
+                    <span className="text-calories font-medium">{recipe.calories} cal</span>
+                  </div>
+                </div>
+
+                {/* Nutrition Summary */}
+                <div className="grid grid-cols-4 gap-2 py-3 border-b border-border">
+                  <div className="text-center">
+                    <p className="text-base font-bold text-protein">{recipe.protein}g</p>
+                    <p className="text-xs text-muted-foreground">Protein</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-base font-bold text-carbs">{recipe.carbs}g</p>
+                    <p className="text-xs text-muted-foreground">Carbs</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-base font-bold text-fat">{recipe.fat}g</p>
+                    <p className="text-xs text-muted-foreground">Fat</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-base font-bold text-fiber">{recipe.fiber}g</p>
+                    <p className="text-xs text-muted-foreground">Fiber</p>
+                  </div>
+                </div>
+
+                {/* Tabs */}
+                <Tabs defaultValue="ingredients" className="mt-4">
+                  <TabsList className="bg-transparent h-auto p-0 justify-start gap-6 border-b border-border">
+                    <TabsTrigger value="ingredients" className="bg-transparent rounded-none px-0 pb-2 text-muted-foreground data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary font-medium -mb-px">
+                      Ingredients
+                    </TabsTrigger>
+                    <TabsTrigger value="instructions" className="bg-transparent rounded-none px-0 pb-2 text-muted-foreground data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary font-medium -mb-px">
+                      Instructions
+                    </TabsTrigger>
+                  </TabsList>
+
+                  <TabsContent value="ingredients" className="mt-4">
+                    <ul className="space-y-2">
+                      {recipe.ingredients.map((ing, i) => (
+                        <li key={i} className="flex items-start gap-3 text-base">
+                          <span className="min-w-[5rem] flex-shrink-0 text-muted-foreground font-medium">
+                            {ing.amount || (ing as any).quantity}
+                          </span>
+                          <span className="text-foreground">{ing.name}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </TabsContent>
+
+                  <TabsContent value="instructions" className="mt-4">
+                    {recipe.instructions && recipe.instructions.length > 0 ? (
+                      <ol className="space-y-4">
+                        {recipe.instructions.map((step, i) => (
+                          <li key={i} className="flex gap-4">
+                            <span className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-sm font-medium text-foreground bg-secondary">
+                              {i + 1}
+                            </span>
+                            <p className="text-base text-foreground pt-0.5">{step}</p>
+                          </li>
+                        ))}
+                      </ol>
+                    ) : (
+                      <p className="text-base text-muted-foreground italic">
+                        No instructions available for this recipe.
+                      </p>
+                    )}
+                  </TabsContent>
+                </Tabs>
+              </div>
             </div>
+            
+            {/* Fixed Footer */}
+            {(onAddToPlan || (showRemoveButton && onRemoveFromPlan)) && (
+              <div className="flex-shrink-0 px-4 pb-4 pt-3 border-t border-border bg-background">
+                <div className="flex gap-2">
+                  {onAddToPlan && (
+                    <Button className="flex-1" onClick={onAddToPlan}>
+                      Add to Meal Plan
+                    </Button>
+                  )}
+                  {showRemoveButton && onRemoveFromPlan && (
+                    <Button variant="destructive" onClick={onRemoveFromPlan}>
+                      Remove from Plan
+                    </Button>
+                  )}
+                </div>
+              </div>
+            )}
           </DrawerContent>
         </Drawer>
 
