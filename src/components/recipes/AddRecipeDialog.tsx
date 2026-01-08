@@ -174,12 +174,12 @@ export function AddRecipeDialog({ open, onOpenChange }: AddRecipeDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] p-0">
-        <DialogHeader className="p-6 pb-4 border-b">
+      <DialogContent className="max-w-2xl h-[90vh] p-0 flex flex-col overflow-hidden">
+        <DialogHeader className="p-6 pb-4 border-b shrink-0">
           <DialogTitle className="text-xl">Add New Recipe</DialogTitle>
         </DialogHeader>
 
-        <ScrollArea className="max-h-[calc(90vh-140px)]">
+        <ScrollArea className="flex-1 min-h-0">
           <div className="space-y-6 p-6">
             {/* AI hint */}
             <div className="flex items-center gap-2 p-3 bg-primary/10 rounded-lg text-sm">
@@ -474,7 +474,7 @@ export function AddRecipeDialog({ open, onOpenChange }: AddRecipeDialogProps) {
           </div>
         </ScrollArea>
 
-        <DialogFooter className="p-6 pt-4 border-t bg-background gap-3">
+        <DialogFooter className="p-6 pt-4 border-t bg-background gap-3 shrink-0">
           <Button
             variant="outline"
             onClick={handleClose}
