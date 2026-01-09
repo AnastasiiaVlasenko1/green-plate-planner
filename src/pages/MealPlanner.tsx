@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { format, startOfWeek, addWeeks, subWeeks, addDays } from 'date-fns';
-import { ChevronLeft, ChevronRight, Plus, X, Flame } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, X, Flame, Check, Loader2 } from 'lucide-react';
 import { AppHeader } from '@/components/layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useMealPlans, useAddMealPlan, useRemoveMealPlan, MealType, getWeekDays, MealPlan } from '@/hooks/useMealPlans';
+import { useMealPlans, useAddMealPlan, useRemoveMealPlan, useToggleMealConsumed, MealType, getWeekDays, MealPlan } from '@/hooks/useMealPlans';
 import { useRecipes, useRecipe, Recipe } from '@/hooks/useRecipes';
 import { useProfile } from '@/hooks/useProfile';
 import { toast } from 'sonner';
@@ -37,6 +38,7 @@ export default function MealPlanner() {
   const { data: recipes } = useRecipes(recipeSearch);
   const addMealPlan = useAddMealPlan();
   const removeMealPlan = useRemoveMealPlan();
+  const toggleConsumed = useToggleMealConsumed();
 
   const weekDays = getWeekDays(weekStart);
 
@@ -100,6 +102,14 @@ export default function MealPlanner() {
 
   const handleMealClick = (meal: MealPlan) => {
     setSelectedMeal(meal);
+  };
+
+  const handleToggleConsumed = (e: React.MouseEvent, meal: MealPlan) => {
+    e.stopPropagation();
+    toggleConsumed.mutate({
+      mealPlanId: meal.id,
+      isConsumed: !meal.is_consumed,
+    });
   };
 
   const handleRemoveFromDetail = async () => {
@@ -184,8 +194,12 @@ export default function MealPlanner() {
                       <Card
                         key={`${day.toISOString()}-${mealType.key}`}
                         className={cn(
-                          "min-h-[100px] cursor-pointer transition-colors",
-                          meal ? "bg-card" : "bg-secondary/50 hover:bg-secondary"
+                          "min-h-[100px] cursor-pointer transition-all",
+                          meal 
+                            ? meal.is_consumed 
+                              ? "bg-primary/10 border-primary/30" 
+                              : "bg-card"
+                            : "bg-secondary/50 hover:bg-secondary"
                         )}
                         onClick={() => !meal && openAddDialog(day, mealType.key)}
                       >
@@ -198,6 +212,14 @@ export default function MealPlanner() {
                                 handleMealClick(meal);
                               }}
                             >
+                              {/* Consumed checkmark badge */}
+                              {meal.is_consumed && (
+                                <div className="absolute -top-1 -left-1 z-10 w-5 h-5 bg-primary rounded-full flex items-center justify-center shadow-sm">
+                                  <Check className="w-3 h-3 text-primary-foreground" />
+                                </div>
+                              )}
+                              
+                              {/* Delete button */}
                               <Button
                                 variant="ghost"
                                 size="icon"
@@ -209,17 +231,45 @@ export default function MealPlanner() {
                               >
                                 <X className="w-3 h-3" />
                               </Button>
+                              
+                              {/* Image with conditional opacity */}
                               <img
                                 src={meal.recipe?.image_url}
                                 alt={meal.recipe?.name}
-                                className="w-full h-12 object-cover rounded mb-1"
+                                className={cn(
+                                  "w-full h-12 object-cover rounded mb-1 transition-opacity",
+                                  meal.is_consumed && "opacity-60"
+                                )}
                               />
-                              <p className="text-xs font-medium text-foreground line-clamp-2">
+                              
+                              {/* Name with conditional strikethrough */}
+                              <p className={cn(
+                                "text-xs font-medium line-clamp-2 transition-colors",
+                                meal.is_consumed 
+                                  ? "line-through text-muted-foreground" 
+                                  : "text-foreground"
+                              )}>
                                 {meal.recipe?.name}
                               </p>
+                              
                               <p className="text-xs text-muted-foreground">
                                 {meal.recipe?.calories} cal
                               </p>
+                              
+                              {/* Consumption toggle checkbox */}
+                              <div 
+                                className="absolute bottom-1 right-1 z-10"
+                                onClick={(e) => handleToggleConsumed(e, meal)}
+                              >
+                                {toggleConsumed.isPending && toggleConsumed.variables?.mealPlanId === meal.id ? (
+                                  <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                                ) : (
+                                  <Checkbox
+                                    checked={meal.is_consumed}
+                                    className="w-4 h-4 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+                                  />
+                                )}
+                              </div>
                             </div>
                           ) : (
                             <div className="h-full flex items-center justify-center">
