@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { format, startOfWeek, addWeeks, subWeeks, addDays } from 'date-fns';
-import { ChevronLeft, ChevronRight, Plus, X, Flame, Check, Loader2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, X, Flame, Loader2 } from 'lucide-react';
 import { AppHeader } from '@/components/layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -212,12 +212,20 @@ export default function MealPlanner() {
                                 handleMealClick(meal);
                               }}
                             >
-                              {/* Consumed checkmark badge */}
-                              {meal.is_consumed && (
-                                <div className="absolute -top-1 -left-1 z-10 w-5 h-5 bg-primary rounded-full flex items-center justify-center shadow-sm">
-                                  <Check className="w-3 h-3 text-primary-foreground" />
-                                </div>
-                              )}
+                              {/* Consumption toggle checkbox */}
+                              <div 
+                                className="absolute top-0 left-0 z-10 bg-background/80 rounded-br p-0.5"
+                                onClick={(e) => handleToggleConsumed(e, meal)}
+                              >
+                                {toggleConsumed.isPending && toggleConsumed.variables?.mealPlanId === meal.id ? (
+                                  <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                                ) : (
+                                  <Checkbox
+                                    checked={meal.is_consumed}
+                                    className="w-4 h-4 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+                                  />
+                                )}
+                              </div>
                               
                               {/* Delete button */}
                               <Button
@@ -255,21 +263,6 @@ export default function MealPlanner() {
                               <p className="text-xs text-muted-foreground">
                                 {meal.recipe?.calories} cal
                               </p>
-                              
-                              {/* Consumption toggle checkbox */}
-                              <div 
-                                className="absolute bottom-1 right-1 z-10"
-                                onClick={(e) => handleToggleConsumed(e, meal)}
-                              >
-                                {toggleConsumed.isPending && toggleConsumed.variables?.mealPlanId === meal.id ? (
-                                  <Loader2 className="w-4 h-4 animate-spin text-primary" />
-                                ) : (
-                                  <Checkbox
-                                    checked={meal.is_consumed}
-                                    className="w-4 h-4 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
-                                  />
-                                )}
-                              </div>
                             </div>
                           ) : (
                             <div className="h-full flex items-center justify-center">
