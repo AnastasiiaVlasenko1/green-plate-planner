@@ -28,7 +28,7 @@ export function useAuth() {
   }, []);
 
   const signUp = useCallback(async (email: string, password: string, fullName?: string) => {
-    const redirectUrl = `${window.location.origin}/`;
+    const redirectUrl = `${window.location.origin}/auth/callback`;
     
     const { error } = await supabase.auth.signUp({
       email,
@@ -60,7 +60,7 @@ export function useAuth() {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/`,
+        redirectTo: `${window.location.origin}/auth/callback`,
       },
     });
     return { error };
