@@ -4,45 +4,40 @@ import { Calendar, ArrowRight } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { MealPlan } from '@/hooks/useMealPlans';
-
 interface TomorrowsPlanCardProps {
   mealPlans: MealPlan[];
   isLoading?: boolean;
 }
-
-export function TomorrowsPlanCard({ mealPlans, isLoading }: TomorrowsPlanCardProps) {
+export function TomorrowsPlanCard({
+  mealPlans,
+  isLoading
+}: TomorrowsPlanCardProps) {
   const tomorrow = addDays(new Date(), 1);
-  const tomorrowsMeals = mealPlans?.filter((plan) =>
-    isSameDay(new Date(plan.plan_date), tomorrow)
-  ) || [];
-
-  const tomorrowNutrition = tomorrowsMeals.reduce(
-    (acc, plan) => {
-      if (plan.recipe) {
-        acc.calories += plan.recipe.calories * plan.servings;
-        acc.protein += plan.recipe.protein * plan.servings;
-        acc.carbs += plan.recipe.carbs * plan.servings;
-        acc.fat += plan.recipe.fat * plan.servings;
-      }
-      return acc;
-    },
-    { calories: 0, protein: 0, carbs: 0, fat: 0 }
-  );
-
+  const tomorrowsMeals = mealPlans?.filter(plan => isSameDay(new Date(plan.plan_date), tomorrow)) || [];
+  const tomorrowNutrition = tomorrowsMeals.reduce((acc, plan) => {
+    if (plan.recipe) {
+      acc.calories += plan.recipe.calories * plan.servings;
+      acc.protein += plan.recipe.protein * plan.servings;
+      acc.carbs += plan.recipe.carbs * plan.servings;
+      acc.fat += plan.recipe.fat * plan.servings;
+    }
+    return acc;
+  }, {
+    calories: 0,
+    protein: 0,
+    carbs: 0,
+    fat: 0
+  });
   if (isLoading) {
-    return (
-      <Card className="card-shadow h-full flex flex-col">
+    return <Card className="card-shadow h-full flex flex-col">
         <CardContent className="p-6 flex-1">
           <div className="h-24 bg-muted rounded-lg animate-pulse" />
         </CardContent>
-      </Card>
-    );
+      </Card>;
   }
-
-  return (
-    <Card className="card-shadow h-full flex flex-col">
+  return <Card className="card-shadow h-full flex flex-col">
       <CardHeader className="pb-3 flex-shrink-0">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-[16px]">
           <CardTitle className="text-lg flex items-center gap-2">
             <Calendar className="w-5 h-5 text-primary" />
             Tomorrow's Plan
@@ -53,8 +48,7 @@ export function TomorrowsPlanCard({ mealPlans, isLoading }: TomorrowsPlanCardPro
         </div>
       </CardHeader>
       <CardContent className="flex-1">
-        {tomorrowsMeals.length === 0 ? (
-          <div className="text-center py-4">
+        {tomorrowsMeals.length === 0 ? <div className="text-center py-4">
             <p className="text-muted-foreground text-sm mb-3">
               No meals planned for tomorrow yet
             </p>
@@ -64,9 +58,7 @@ export function TomorrowsPlanCard({ mealPlans, isLoading }: TomorrowsPlanCardPro
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Link>
             </Button>
-          </div>
-        ) : (
-          <div className="space-y-4">
+          </div> : <div className="space-y-4">
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">
                 {tomorrowsMeals.length} meal{tomorrowsMeals.length !== 1 ? 's' : ''} planned
@@ -106,24 +98,12 @@ export function TomorrowsPlanCard({ mealPlans, isLoading }: TomorrowsPlanCardPro
 
             {/* Mini meal preview */}
             <div className="flex -space-x-2">
-              {tomorrowsMeals.slice(0, 4).map((meal) => (
-                <img
-                  key={meal.id}
-                  src={meal.recipe?.image_url}
-                  alt={meal.recipe?.name}
-                  className="w-10 h-10 rounded-full border-2 border-background object-cover"
-                  title={meal.recipe?.name}
-                />
-              ))}
-              {tomorrowsMeals.length > 4 && (
-                <div className="w-10 h-10 rounded-full border-2 border-background bg-muted flex items-center justify-center text-xs font-medium text-muted-foreground">
+              {tomorrowsMeals.slice(0, 4).map(meal => <img key={meal.id} src={meal.recipe?.image_url} alt={meal.recipe?.name} className="w-10 h-10 rounded-full border-2 border-background object-cover" title={meal.recipe?.name} />)}
+              {tomorrowsMeals.length > 4 && <div className="w-10 h-10 rounded-full border-2 border-background bg-muted flex items-center justify-center text-xs font-medium text-muted-foreground">
                   +{tomorrowsMeals.length - 4}
-                </div>
-              )}
+                </div>}
             </div>
-          </div>
-        )}
+          </div>}
       </CardContent>
-    </Card>
-  );
+    </Card>;
 }
