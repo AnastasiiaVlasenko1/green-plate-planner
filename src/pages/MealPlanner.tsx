@@ -195,7 +195,7 @@ export default function MealPlanner() {
 
       {/* Sticky Week Navigation - z-50 to not cover modals */}
       <div 
-        className="sticky top-0 z-50 bg-background border-b"
+        className="sticky top-16 z-40 bg-background border-b"
         style={{ boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}
       >
         <div className="flex items-center justify-between h-14 px-4">
