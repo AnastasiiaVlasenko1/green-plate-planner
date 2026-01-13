@@ -36,7 +36,7 @@ function NavContent({ onNavigate }: { onNavigate?: () => void }) {
   return (
     <div className="flex flex-col h-full">
       {/* Logo */}
-      <div className="p-6 border-b border-border">
+      <div className="p-6 border-b border-border flex flex-col justify-center items-start h-16">
         <Link to="/" className="flex items-center gap-2" onClick={onNavigate}>
           <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
             <UtensilsCrossed className="w-5 h-5 text-primary-foreground" />

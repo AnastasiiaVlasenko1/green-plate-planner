@@ -136,7 +136,7 @@ export default function MealPlanner() {
 
       <div className="flex-1 p-4 lg:p-6 space-y-4 animate-fade-in overflow-x-auto">
         {/* Week Navigation */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-center gap-6">
           <Button variant="outline" size="icon" onClick={() => setWeekStart(subWeeks(weekStart, 1))}>
             <ChevronLeft className="w-4 h-4" />
           </Button>
