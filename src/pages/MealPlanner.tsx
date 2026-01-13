@@ -1,11 +1,14 @@
 import { useState, useRef, useEffect } from 'react';
 import { format, startOfWeek, addWeeks, subWeeks, addDays, isToday } from 'date-fns';
-import { ChevronLeft, ChevronRight, Plus, X, Flame, Loader2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, X, Flame, Loader2, Search } from 'lucide-react';
 import { AppHeader } from '@/components/layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
+import { Input } from '@/components/ui/input';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useMealPlans, useAddMealPlan, useRemoveMealPlan, useToggleMealConsumed, MealType, getWeekDays, MealPlan } from '@/hooks/useMealPlans';
 import { useRecipes, useRecipe, Recipe } from '@/hooks/useRecipes';
@@ -14,6 +17,35 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { RecipeDetailDialog } from '@/components/recipes/RecipeDetailDialog';
 import { useIsMobile } from '@/hooks/use-mobile';
+
+// Group recipes by suggested meal type based on tags
+const groupRecipesByMealType = (recipes: Recipe[] | undefined) => {
+  if (!recipes) return { breakfast: [], lunch: [], dinner: [], other: [] };
+  
+  const groups: { breakfast: Recipe[]; lunch: Recipe[]; dinner: Recipe[]; other: Recipe[] } = {
+    breakfast: [],
+    lunch: [],
+    dinner: [],
+    other: []
+  };
+  
+  recipes.forEach(recipe => {
+    const tags = recipe.tags?.map(t => t.toLowerCase()) || [];
+    const name = recipe.name.toLowerCase();
+    
+    if (tags.includes('breakfast') || name.includes('breakfast') || name.includes('oatmeal') || name.includes('pancake') || name.includes('egg')) {
+      groups.breakfast.push(recipe);
+    } else if (tags.includes('lunch') || name.includes('salad') || name.includes('sandwich') || name.includes('wrap')) {
+      groups.lunch.push(recipe);
+    } else if (tags.includes('dinner') || name.includes('steak') || name.includes('chicken') || name.includes('salmon') || name.includes('pasta')) {
+      groups.dinner.push(recipe);
+    } else {
+      groups.other.push(recipe);
+    }
+  });
+  
+  return groups;
+};
 
 const mealTypes: {
   key: MealType;
@@ -161,28 +193,28 @@ export default function MealPlanner() {
     <div className="flex flex-col h-full bg-background">
       <AppHeader title="Meal Planner" showSearch={false} />
 
-      {/* Sticky Week Navigation */}
+      {/* Sticky Week Navigation - z-50 to not cover modals */}
       <div 
-        className="sticky top-0 z-[100] bg-background border-b"
+        className="sticky top-0 z-50 bg-background border-b"
         style={{ boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}
       >
-        <div className="flex items-center justify-center gap-4 h-14 px-4">
+        <div className="flex items-center justify-between h-14 px-4">
           <Button 
             variant="outline" 
             size="icon" 
             onClick={() => setWeekStart(subWeeks(weekStart, 1))}
-            className="shrink-0"
+            className="w-10 h-10 shrink-0"
           >
             <ChevronLeft className="w-4 h-4" />
           </Button>
-          <h2 className="text-base font-semibold text-center whitespace-nowrap">
+          <h2 className="flex-1 text-base font-semibold text-center whitespace-nowrap">
             {format(weekStart, 'MMM d')} - {format(addDays(weekStart, 6), 'MMM d, yyyy')}
           </h2>
           <Button 
             variant="outline" 
             size="icon" 
             onClick={() => setWeekStart(addWeeks(weekStart, 1))}
-            className="shrink-0"
+            className="w-10 h-10 shrink-0"
           >
             <ChevronRight className="w-4 h-4" />
           </Button>
@@ -191,43 +223,38 @@ export default function MealPlanner() {
 
       {/* Planner Content */}
       <div className="flex-1 overflow-hidden">
-        <div className="h-full flex">
-          {/* Meal Type Labels - Fixed Left Column */}
-          <div className="shrink-0 w-20 md:w-24 bg-background border-r z-10">
-            {/* Header spacer */}
-            <div className="h-16 md:h-20 border-b" />
-            
-            {/* Meal type labels */}
-            {mealTypes.map(mealType => (
-              <div 
-                key={mealType.key} 
-                className="h-[120px] md:h-[130px] flex items-center justify-end pr-3 border-b"
-              >
-                <span className="text-xs md:text-sm font-medium text-muted-foreground text-right">
-                  {mealType.label}
-                </span>
-              </div>
-            ))}
-          </div>
+        <div 
+          ref={scrollContainerRef}
+          className={cn(
+            "h-full overflow-x-auto overflow-y-auto",
+            "snap-x snap-mandatory md:snap-none",
+            "scroll-smooth"
+          )}
+          style={{ WebkitOverflowScrolling: 'touch' }}
+        >
+          <div className="flex min-w-fit h-full">
+            {/* Meal Type Labels - Sticky Left Column */}
+            <div className="shrink-0 w-20 md:w-24 bg-background border-r border-[#E5E5E5] sticky left-0 z-10">
+              {/* Header spacer */}
+              <div className="h-16 md:h-20 border-b border-[#E5E5E5]" />
+              
+              {/* Meal type labels */}
+              {mealTypes.map(mealType => (
+                <div 
+                  key={mealType.key} 
+                  className="h-[120px] md:h-[130px] flex items-center justify-end pr-3 border-b border-[#E5E5E5]"
+                >
+                  <span className="text-xs md:text-sm font-medium text-muted-foreground text-right">
+                    {mealType.label}
+                  </span>
+                </div>
+              ))}
+            </div>
 
-          {/* Scrollable Days Grid */}
-          <div 
-            ref={scrollContainerRef}
-            className={cn(
-              "flex-1 overflow-x-auto overflow-y-auto",
-              // Mobile: snap scrolling
-              "md:overflow-x-hidden",
-              "snap-x snap-mandatory md:snap-none",
-              // Smooth scrolling with momentum
-              "scroll-smooth touch-pan-x"
-            )}
-            style={{ WebkitOverflowScrolling: 'touch' }}
-          >
+            {/* Days Container */}
             <div className={cn(
               "flex",
-              // Mobile: each day takes 1/3 of viewport width (show 3 days)
-              "md:w-full",
-              isMobile ? "w-[calc(100vw*7/3)]" : ""
+              isMobile ? "w-[calc((100vw-80px)*7/3)]" : "flex-1"
             )}>
               {weekDays.map(day => {
                 const nutrition = getDayNutrition(day);
@@ -381,48 +408,136 @@ export default function MealPlanner() {
         </div>
       </div>
 
-      {/* Add Recipe Dialog */}
-      <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
-        <DialogContent className="max-w-lg max-h-[80vh] overflow-hidden flex flex-col">
-          <DialogHeader>
-            <DialogTitle>
-              Add {selectedSlot && mealTypes.find(m => m.key === selectedSlot.mealType)?.label} for{' '}
-              {selectedSlot && format(selectedSlot.date, 'EEEE, MMM d')}
-            </DialogTitle>
-          </DialogHeader>
-          <input 
-            type="text" 
-            placeholder="Search recipes..." 
-            value={recipeSearch} 
-            onChange={e => setRecipeSearch(e.target.value)} 
-            className="w-full px-3 py-2 border border-input rounded-md bg-background text-sm" 
-          />
-          <div className="flex-1 overflow-y-auto space-y-2 mt-4">
-            {recipes?.map(recipe => (
-              <div 
-                key={recipe.id} 
-                className="flex gap-3 p-2 rounded-lg hover:bg-secondary cursor-pointer border border-transparent hover:border-border" 
-                onClick={() => handleAddRecipe(recipe)}
+      {/* Add Recipe Dialog/Drawer */}
+      {isMobile ? (
+        <Drawer open={showAddDialog} onOpenChange={setShowAddDialog}>
+          <DrawerContent className="h-[100dvh] max-h-[100dvh] flex flex-col">
+            {/* Header */}
+            <DrawerHeader className="flex items-center justify-between px-4 py-3 border-b shrink-0">
+              <DrawerTitle className="text-lg font-semibold">
+                Add {selectedSlot && mealTypes.find(m => m.key === selectedSlot.mealType)?.label}
+              </DrawerTitle>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={() => setShowAddDialog(false)}
+                className="w-8 h-8"
               >
-                <img 
-                  src={recipe.image_url} 
-                  alt={recipe.name} 
-                  className="w-16 h-16 rounded-lg object-cover" 
+                <X className="w-5 h-5" />
+              </Button>
+            </DrawerHeader>
+            
+            {/* Search bar */}
+            <div className="px-4 py-3 border-b shrink-0">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input 
+                  type="text" 
+                  placeholder="Search recipes..." 
+                  value={recipeSearch} 
+                  onChange={e => setRecipeSearch(e.target.value)} 
+                  className="pl-9"
                 />
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium text-foreground">{recipe.name}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {recipe.calories} cal • {recipe.protein}g protein
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {recipe.prep_time + recipe.cook_time} min
-                  </p>
-                </div>
               </div>
-            ))}
-          </div>
-        </DialogContent>
-      </Dialog>
+              <p className="text-xs text-muted-foreground mt-2">
+                {selectedSlot && format(selectedSlot.date, 'EEEE, MMM d')}
+              </p>
+            </div>
+            
+            {/* Grouped recipes list */}
+            <ScrollArea className="flex-1">
+              <div className="px-4 py-2">
+                {(() => {
+                  const grouped = groupRecipesByMealType(recipes);
+                  const sections = [
+                    { key: 'breakfast', label: 'Breakfast', items: grouped.breakfast },
+                    { key: 'lunch', label: 'Lunch', items: grouped.lunch },
+                    { key: 'dinner', label: 'Dinner', items: grouped.dinner },
+                    { key: 'other', label: 'Other', items: grouped.other },
+                  ];
+                  
+                  return sections.map(section => section.items.length > 0 && (
+                    <div key={section.key} className="mb-4">
+                      <h3 className="text-sm font-medium text-muted-foreground mb-2 sticky top-0 bg-background py-1">
+                        {section.label}
+                      </h3>
+                      <div className="space-y-2">
+                        {section.items.map(recipe => (
+                          <div 
+                            key={recipe.id} 
+                            className="flex gap-3 p-2 rounded-lg active:bg-secondary cursor-pointer border border-[#E5E5E5]" 
+                            onClick={() => handleAddRecipe(recipe)}
+                          >
+                            <img 
+                              src={recipe.image_url} 
+                              alt={recipe.name} 
+                              className="w-16 h-16 rounded-lg object-cover" 
+                            />
+                            <div className="flex-1 min-w-0">
+                              <p className="font-medium text-foreground">{recipe.name}</p>
+                              <p className="text-sm text-muted-foreground">
+                                {recipe.calories} cal • {recipe.protein}g protein
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                {recipe.prep_time + recipe.cook_time} min
+                              </p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ));
+                })()}
+              </div>
+            </ScrollArea>
+          </DrawerContent>
+        </Drawer>
+      ) : (
+        <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
+          <DialogContent className="max-w-lg max-h-[80vh] overflow-hidden flex flex-col">
+            <DialogHeader>
+              <DialogTitle>
+                Add {selectedSlot && mealTypes.find(m => m.key === selectedSlot.mealType)?.label} for{' '}
+                {selectedSlot && format(selectedSlot.date, 'EEEE, MMM d')}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input 
+                type="text" 
+                placeholder="Search recipes..." 
+                value={recipeSearch} 
+                onChange={e => setRecipeSearch(e.target.value)} 
+                className="pl-9"
+              />
+            </div>
+            <div className="flex-1 overflow-y-auto space-y-2 mt-4">
+              {recipes?.map(recipe => (
+                <div 
+                  key={recipe.id} 
+                  className="flex gap-3 p-2 rounded-lg hover:bg-secondary cursor-pointer border border-[#E5E5E5] hover:border-border" 
+                  onClick={() => handleAddRecipe(recipe)}
+                >
+                  <img 
+                    src={recipe.image_url} 
+                    alt={recipe.name} 
+                    className="w-16 h-16 rounded-lg object-cover" 
+                  />
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-foreground">{recipe.name}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {recipe.calories} cal • {recipe.protein}g protein
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {recipe.prep_time + recipe.cook_time} min
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
 
       {/* Recipe Detail Dialog */}
       <RecipeDetailDialog 
