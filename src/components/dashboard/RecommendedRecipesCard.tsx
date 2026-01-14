@@ -87,8 +87,17 @@ interface RecommendationItemProps {
 // Parse nutrition highlight string into individual nutrient items
 function parseNutritionHighlight(highlight: string): string[] {
   if (!highlight) return [];
-  // Remove common prefixes like "High in", "Very high in", "Rich in", "Good source of"
-  const cleaned = highlight.replace(/^(very |extremely )?(high in|rich in|good source of|excellent source of)\s*/i, '');
+  
+  // Handle patterns like "Excellent protein source" → "protein"
+  // and "High in protein" → "protein"
+  // and "Good source of fiber" → "fiber"
+  let cleaned = highlight
+    .replace(/^(very |extremely |excellent |good |great )?(high in|rich in|source of)\s*/gi, '')
+    .replace(/\s*(source|rich)$/gi, ''); // Remove trailing "source" or "rich"
+  
+  // If still has "X source" pattern, extract just the nutrient
+  cleaned = cleaned.replace(/(\w+)\s+source/gi, '$1');
+  
   // Split by comma or "and"
   return cleaned
     .split(/,\s*|\s+and\s+/)
@@ -132,7 +141,8 @@ function RecommendationItem({
             <Badge 
               key={i} 
               variant="secondary" 
-              className="text-xs whitespace-nowrap capitalize"
+              className="text-xs whitespace-nowrap capitalize max-w-[100px] truncate"
+              title={nutrient}
             >
               {nutrient}
             </Badge>
