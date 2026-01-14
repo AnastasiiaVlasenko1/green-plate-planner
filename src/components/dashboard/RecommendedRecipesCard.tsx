@@ -83,6 +83,19 @@ interface RecommendationItemProps {
   recommendation: RecipeRecommendation;
   onClick: () => void;
 }
+
+// Parse nutrition highlight string into individual nutrient items
+function parseNutritionHighlight(highlight: string): string[] {
+  if (!highlight) return [];
+  // Remove common prefixes like "High in", "Very high in", "Rich in", "Good source of"
+  const cleaned = highlight.replace(/^(very |extremely )?(high in|rich in|good source of|excellent source of)\s*/i, '');
+  // Split by comma or "and"
+  return cleaned
+    .split(/,\s*|\s+and\s+/)
+    .map(s => s.trim())
+    .filter(Boolean);
+}
+
 function RecommendationItem({
   recommendation,
   onClick
@@ -92,9 +105,20 @@ function RecommendationItem({
     reason,
     nutrition_highlight
   } = recommendation;
-  return <button onClick={onClick} className="w-full flex gap-3 p-3 rounded-lg border hover:border-primary/50 hover:bg-accent/30 transition-all text-left group">
+  
+  const nutrients = parseNutritionHighlight(nutrition_highlight).slice(0, 3);
+  
+  return (
+    <button 
+      onClick={onClick} 
+      className="w-full flex gap-3 p-3 rounded-lg border hover:border-primary/50 hover:bg-accent/30 transition-all text-left group"
+    >
       <div className="relative w-16 h-16 rounded-md overflow-hidden flex-shrink-0">
-        <img src={recipe.image_url} alt={recipe.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+        <img 
+          src={recipe.image_url} 
+          alt={recipe.name} 
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform" 
+        />
       </div>
       <div className="flex-1 min-w-0">
         <h4 className="font-medium text-sm truncate group-hover:text-primary transition-colors">
@@ -103,12 +127,21 @@ function RecommendationItem({
         <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">
           {reason}
         </p>
-        <Badge variant="secondary" className="mt-1.5 text-xs">
-          {nutrition_highlight}
-        </Badge>
+        <div className="flex flex-wrap gap-1 mt-1.5">
+          {nutrients.map((nutrient, i) => (
+            <Badge 
+              key={i} 
+              variant="secondary" 
+              className="text-xs whitespace-nowrap capitalize"
+            >
+              {nutrient}
+            </Badge>
+          ))}
+        </div>
       </div>
       <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
         <Plus className="w-4 h-4 text-primary" />
       </div>
-    </button>;
+    </button>
+  );
 }
