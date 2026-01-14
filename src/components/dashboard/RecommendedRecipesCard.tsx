@@ -88,15 +88,16 @@ interface RecommendationItemProps {
 function parseNutritionHighlight(highlight: string): string[] {
   if (!highlight) return [];
   
-  // Handle patterns like "Excellent protein source" → "protein"
-  // and "High in protein" → "protein"
-  // and "Good source of fiber" → "fiber"
+  // Remove buzz words and common patterns
   let cleaned = highlight
-    .replace(/^(very |extremely |excellent |good |great )?(high in|rich in|source of)\s*/gi, '')
-    .replace(/\s*(source|rich)$/gi, ''); // Remove trailing "source" or "rich"
-  
-  // If still has "X source" pattern, extract just the nutrient
-  cleaned = cleaned.replace(/(\w+)\s+source/gi, '$1');
+    // Remove leading buzz words
+    .replace(/^(very |extremely |excellent |good |great |high |low |rich )+/gi, '')
+    // Remove "high in", "rich in", "source of" patterns
+    .replace(/(high in|rich in|source of|packed with|loaded with)\s*/gi, '')
+    // Remove trailing "source", "rich", "content"
+    .replace(/\s*(source|rich|content)$/gi, '')
+    // Handle "X source" pattern → just X
+    .replace(/(\w+)\s+source/gi, '$1');
   
   // Split by comma or "and"
   return cleaned
